@@ -9,7 +9,7 @@
  * here you can set some default parameters for
  * application
  */
-#define DEFAULT_APP_ID				3
+#define DEFAULT_APP_ID				10
 #define DEFAULT_APP_SERIAL_RATE		SR_9600
 #define DEFAULT_APP_SERIAL_CONFIG	SERIAL_8N1
 

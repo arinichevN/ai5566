@@ -146,7 +146,7 @@ void app_control(App *item, AppSerial serials[], ACPLCommandNode acnodes[], size
 				channel_control(channel);
 			}
 			appSerials_control(serials, acnodes, acnodes_count);
-			if(channels_activeExists(channels)){
+			if(!channels_activeExists(channels)){
 				item->state = DSTEP2;
 			}
 			break;

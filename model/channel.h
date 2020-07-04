@@ -19,7 +19,7 @@
  * here you can set some default parameters for
  * channels
  */
-#define DEFAULT_CHANNEL_FIRST_ID			1
+#define DEFAULT_CHANNEL_FIRST_ID			11
 #define DEFAULT_CHANNEL_POLL_INTERVAL_MS	300 //conversion time for MAX6675: 220 ms, for MAX31855: 100 ms
 #define DEFAULT_CHANNEL_DEVICE_KIND			DEVICE_KIND_MAX31855
 #define DEFAULT_CHANNEL_ENABLE				YES
