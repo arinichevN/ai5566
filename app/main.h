@@ -25,7 +25,7 @@ extern int appc_checkSerialConfig(int v);
 
 extern void app_init(App *item);
 extern void app_reset(App *item);
-extern void app_control(App *item, AppSerial serials[], ACPLCommandNode acnodes[], size_t acnodes_count, ChannelLList *channels);
+extern void app_control(App *item, AppSerial serials[], ChannelLList *channels);
 
 extern const char *app_getErrorStr(App *item);
 extern const char *app_getStateStr(App *item);

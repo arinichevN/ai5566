@@ -58,7 +58,6 @@ void channel_setDefaults(Channel *item, size_t ind){
 	channel_setDeviceKind(item, DEFAULT_CHANNEL_DEVICE_KIND);
 	ton_setInterval(&item->tmr, DEFAULT_CHANNEL_POLL_INTERVAL_MS);
 	item->id = ind + DEFAULT_CHANNEL_FIRST_ID;
-	item->ind = ind;
 	item->enable = DEFAULT_CHANNEL_ENABLE;
 }
 
@@ -68,7 +67,6 @@ static void channel_setFromNVRAM(Channel *item, size_t ind){
 		item->error_id = ERROR_PMEM_READ;
 		return;
 	}
-	item->ind = ind;
 }
 
 void channel_setStaticParam(Channel *item, int cs, int sclk, int miso){
@@ -87,6 +85,7 @@ void channel_begin(Channel *item, size_t ind, int default_btn){
 		channel_setFromNVRAM(item, ind);
 		printd("\tNVRAM param\n");
 	}
+	item->ind = ind;
 	item->state = INIT;
 	printd("\tid: ");printdln(item->id);
 	printd("\n");
@@ -191,15 +190,15 @@ int channels_getIdFirst(ChannelLList *channels, int *out){
 	return success;
 }
 
-int channel_getDeviceKind(Channel *item){
+int CHANNEL_FUN_GET(device_kind)(Channel *item){
 	return item->device_kind;
 }
 
-unsigned long channel_getPollInterval(Channel *item){
+unsigned long CHANNEL_FUN_GET(poll_interval)(Channel *item){
 	return item->tmr.interval;
 }
 
-int channel_getEnable (Channel *item){return item->enable;}
+int CHANNEL_FUN_GET(enable) (Channel *item){return item->enable;}
 
 int channel_control(Channel *item){
 	switch(item->state){

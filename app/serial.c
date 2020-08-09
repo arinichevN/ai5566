@@ -41,6 +41,7 @@ static void appSerial_beginDevice(AppSerialConfig *item, HardwareSerial *serial)
 
 int appSerial_beginKind(AppSerial *serial, AppSerialConfig *config, HardwareSerial **serial_debug){
 	switch (config->kind){
+#ifdef SERIAL_SERVER
 		case APP_SERIAL_KIND_SERVER:{
 			appSerial_beginDevice(config, serial->device);
 			ACPL *acpl = acpl_new();
@@ -51,6 +52,7 @@ int appSerial_beginKind(AppSerial *serial, AppSerialConfig *config, HardwareSeri
 			//serial->device->print("serial_server\n");
 #endif
 			break;}
+#endif
 		case APP_SERIAL_KIND_DEBUG:
 			if(*serial_debug == NULL){
 				appSerial_beginDevice(config, serial->device);
@@ -75,13 +77,15 @@ void appSerials_print(AppSerial serials[]){
 	printd("\n");
 }
 
-void appSerials_control(AppSerial serials[], ACPLCommandNode acnodes[], size_t acnodes_count ){
+void appSerials_control(AppSerial serials[] ){
 	FOREACH_SERIAL(i)
 		AppSerial *serial = &serials[i];
 		switch(serial->kind) {
+#ifdef SERIAL_SERVER
 			case APP_SERIAL_KIND_SERVER: 
-				acpl_server(serial->acpl, acnodes, acnodes_count, serial->device);
+				acpl_server(serial->acpl, serial->device);
 				break;
+#endif
 		}
 	}
 }

@@ -123,7 +123,7 @@ void app_errControl(App *item){
 	item->ectl_state = state;
 }
 
-void app_control(App *item, AppSerial serials[], ACPLCommandNode acnodes[], size_t acnodes_count, ChannelLList *channels) { 
+void app_control(App *item, AppSerial serials[], ChannelLList *channels) { 
 	switch(item->state){
 		case RUN:{
 			item->error_id = ERROR_NO;
@@ -134,7 +134,7 @@ void app_control(App *item, AppSerial serials[], ACPLCommandNode acnodes[], size
 					item->error_id = ERROR_SUBBLOCK;
 				}
 			}
-			appSerials_control(serials, acnodes, acnodes_count);
+			appSerials_control(serials);
 			app_errControl(item);
 			break;}
 		case INIT:
@@ -145,7 +145,7 @@ void app_control(App *item, AppSerial serials[], ACPLCommandNode acnodes[], size
 			FOREACH_CHANNEL(channels)
 				channel_control(channel);
 			}
-			appSerials_control(serials, acnodes, acnodes_count);
+			appSerials_control(serials);
 			if(!channels_activeExists(channels)){
 				item->state = DSTEP2;
 			}

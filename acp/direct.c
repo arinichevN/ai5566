@@ -54,40 +54,40 @@ int acpd_readResponse(HardwareSerial *serial, char *buf, size_t len){
 	return ACP_ERROR;
 }
 
-int acpd_sendSI(HardwareSerial *serial, const char *v1, int v2){
+int acpd_sendSI(HardwareSerial *serial, char sign, const char *v1, int v2){
 	ACPD_PREP_BUF
-	int r = acp_buildPackSI(ACPD_BUF, sizeof ACPD_BUF, v1, v2);
+	int r = acp_buildPackSI(ACPD_BUF, sizeof ACPD_BUF, sign, v1, v2);
 	if(!r) return r;
 	ACPD_WRITE_BUF
 	return 1;
 }
 
-int acpd_sendSIF(HardwareSerial *serial, const char *v1, int v2, double v3){
+int acpd_sendSIF(HardwareSerial *serial, char sign, const char *v1, int v2, double v3){
 	ACPD_PREP_BUF
-	int r = acp_buildPackSIF(ACPD_BUF, sizeof ACPD_BUF, v1, v2, v3);
+	int r = acp_buildPackSIF(ACPD_BUF, sizeof ACPD_BUF, sign, v1, v2, v3);
 	if(!r) return r;
 	ACPD_WRITE_BUF
 	return 1;
 }
 
-int acpd_sendSII(HardwareSerial *serial, const char *v1, int v2, int v3){
+int acpd_sendSII(HardwareSerial *serial, char sign, const char *v1, int v2, int v3){
 	ACPD_PREP_BUF
-	int r = acp_buildPackSII(ACPD_BUF, sizeof ACPD_BUF, v1, v2, v3);
+	int r = acp_buildPackSII(ACPD_BUF, sizeof ACPD_BUF, sign, v1, v2, v3);
 	if(!r) return r;
 	ACPD_WRITE_BUF
 	return 1;
 }
 
-int acpd_sendSIUl(HardwareSerial *serial, const char *v1, int v2, unsigned long v3){
+int acpd_sendSIUl(HardwareSerial *serial, char sign, const char *v1, int v2, unsigned long v3){
 	ACPD_PREP_BUF
-	int r = acp_buildPackSIUl(ACPD_BUF, sizeof ACPD_BUF, v1, v2, v3);
+	int r = acp_buildPackSIUl(ACPD_BUF, sizeof ACPD_BUF, sign, v1, v2, v3);
 	if(!r) return r;
 	ACPD_WRITE_BUF
 	return 1;
 }
 
 int acpd_getFTS(HardwareSerial *serial, const char *cmd, int channel_id, FTS *out){
-	int r = acpd_sendSI(serial, cmd, channel_id);
+	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST, cmd, channel_id);
 	if(!r) return r;
 	ACPD_PREP_BUF
 	if(acpd_readResponse(serial, ACPD_BUF, ACP_BUF_MAX_LENGTH) != ACP_DONE){
@@ -103,7 +103,7 @@ int acpd_getFTS(HardwareSerial *serial, const char *cmd, int channel_id, FTS *ou
 }
 
 int acpd_getII(HardwareSerial *serial, const char *cmd, int channel_id, int *out){
-	int r = acpd_sendSI(serial, cmd, channel_id);
+	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST, cmd, channel_id);
 	if(!r) return r;
 	ACPD_PREP_BUF
 	if(acpd_readResponse(serial, ACPD_BUF, ACP_BUF_MAX_LENGTH) != ACP_DONE){
@@ -112,21 +112,24 @@ int acpd_getII(HardwareSerial *serial, const char *cmd, int channel_id, int *out
 	if(!acp_packCheckCRC(ACPD_BUF)){
 		return 0;
 	}
+	if(ACPD_BUF[ACP_BUF_IND_SIGN] != ACP_SIGN_RESPONSE){
+		return 0;
+	}
 	int tchannel_id;
-	if(!acp_packGetCellI (ACPD_BUF, 0, &tchannel_id)){
+	if(!acp_packGetCellI (ACPD_BUF, ACP_IND_ID, &tchannel_id)){
 		return 0;
 	}
 	if(tchannel_id != channel_id){
 		return 0;
 	}
-	if(!acp_packGetCellI (ACPD_BUF, 1, out)){
+	if(!acp_packGetCellI (ACPD_BUF, ACP_IND_PARAM1, out)){
 		return 0;
 	}
 	return 1;
 }
 
 int acpd_getIUl(HardwareSerial *serial, const char *cmd, int channel_id, unsigned long *out){
-	int r = acpd_sendSI(serial, cmd, channel_id);
+	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST, cmd, channel_id);
 	if(!r) return r;
 	ACPD_PREP_BUF
 	if(acpd_readResponse(serial, ACPD_BUF, ACP_BUF_MAX_LENGTH) != ACP_DONE){
@@ -135,21 +138,24 @@ int acpd_getIUl(HardwareSerial *serial, const char *cmd, int channel_id, unsigne
 	if(!acp_packCheckCRC(ACPD_BUF)){
 		return 0;
 	}
+	if(ACPD_BUF[ACP_BUF_IND_SIGN] != ACP_SIGN_RESPONSE){
+		return 0;
+	}
 	int tchannel_id;
-	if(!acp_packGetCellI (ACPD_BUF, 0, &tchannel_id)){
+	if(!acp_packGetCellI (ACPD_BUF, ACP_IND_ID, &tchannel_id)){
 		return 0;
 	}
 	if(tchannel_id != channel_id){
 		return 0;
 	}
-	if(!acp_packGetCellUl (ACPD_BUF, 1, out)){
+	if(!acp_packGetCellUl (ACPD_BUF, APC_IND_PARAM1, out)){
 		return 0;
 	}
 	return 1;
 }
 
 int acpd_getIS(HardwareSerial *serial, const char *cmd, int channel_id, char *out, size_t slen){
-	int r = acpd_sendSI(serial, cmd, channel_id);
+	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST, cmd, channel_id);
 	if(!r) return r;
 	ACPD_PREP_BUF
 	r = acpd_readResponse(serial, ACPD_BUF, ACP_BUF_MAX_LENGTH);
@@ -161,15 +167,18 @@ int acpd_getIS(HardwareSerial *serial, const char *cmd, int channel_id, char *ou
 	if(!acp_packCheckCRC(ACPD_BUF)){
 		return 0;
 	}
+	if(ACPD_BUF[ACP_BUF_IND_SIGN] != ACP_SIGN_RESPONSE){
+		return 0;
+	}
 	int tchannel_id;
-	if(!acp_packGetCellI (ACPD_BUF, 0, &tchannel_id)){
+	if(!acp_packGetCellI (ACPD_BUF, ACP_IND_ID, &tchannel_id)){
 		return 0;
 	}
 	if(tchannel_id != channel_id){
 		printd(tchannel_id);
 		return 0;
 	}
-	if(!acp_packGetCellS (ACPD_BUF, 1, out, slen)){
+	if(!acp_packGetCellS (ACPD_BUF, ACP_IND_PARAM1, out, slen)){
 		return 0;
 	}
 	return 1;

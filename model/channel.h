@@ -41,6 +41,8 @@ typedef struct channel_st Channel;
 DEC_LLIST(Channel)
 
 #define FOREACH_CHANNEL(LIST) FOREACH_LLIST(channel, LIST, Channel){
+#define CHANNEL_SAVE_FIELD(F) PmemChannel pchannel;	if(pmem_getPChannel(&pchannel, item->ind)){pchannel.F = item->F; pmem_savePChannel(&pchannel, item->ind);}
+#define CHANNEL_FUN_GET(param) channel_get_ ## param
 
 extern void channel_setDeviceKind(Channel *item, int kind);
 extern const char *channel_getStateStr(Channel *item);
@@ -51,7 +53,6 @@ extern int channel_start(Channel *item);
 extern int channel_stop(Channel *item);
 extern int channel_control(Channel *item);
 extern int channels_getIdFirst(ChannelLList *channels, int *out);
-extern int channel_getDeviceKind(Channel *item);
-extern unsigned long channel_getPollInterval(Channel *item);
+
 
 #endif 

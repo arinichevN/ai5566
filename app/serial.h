@@ -46,7 +46,7 @@ typedef struct {
 extern void appSerials_init(AppSerial serials[]);
 extern int appSerial_beginKind(AppSerial *serial, AppSerialConfig *config, HardwareSerial **serial_debug);
 extern void appSerials_print(AppSerial serials[]);
-extern void appSerials_control(AppSerial serials[], ACPLCommandNode acnodes[], size_t acnodes_count);
+extern void appSerials_control(AppSerial serials[]);
 extern AppSerial *appSerials_getClientSerialById(AppSerial serials[], int id);
 
 #endif

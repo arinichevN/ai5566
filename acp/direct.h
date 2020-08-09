@@ -10,13 +10,13 @@
 
 extern int acpd_readResponse(HardwareSerial *serial, char *buf, size_t len);
 
-extern int acpd_sendSI(HardwareSerial *serial, const char *v1, int v2);
+extern int acpd_sendSI(HardwareSerial *serial, char sign, const char *v1, int v2);
 
-extern int acpd_sendSIF(HardwareSerial *serial, const char *v1, int v2, double v3);
+extern int acpd_sendSIF(HardwareSerial *serial, char sign, const char *v1, int v2, double v3);
 
-extern int acpd_sendSII(HardwareSerial *serial, const char *v1, int v2, int v3);
+extern int acpd_sendSII(HardwareSerial *serial, char sign, const char *v1, int v2, int v3);
 
-extern int acpd_sendSIUl(HardwareSerial *serial, const char *v1, int v2, unsigned long v3);
+extern int acpd_sendSIUl(HardwareSerial *serial, char sign, const char *v1, int v2, unsigned long v3);
 
 extern int acpd_getFTS(HardwareSerial *serial, const char *cmd, int channel_id, FTS *out);
 

@@ -33,12 +33,6 @@ const char *acp_getStateStr(int v){
 	return "?";
 }
 
-int acp_goodCmdChar (int v) {
-  if ((v >= 65 && v <= 90) || (v >= 97 && v <= 122)) {
-    return 1;
-  }
-  return 0;
-}
 
 int acp_excludeDefinedCRC(uint8_t *v){
 	uint8_t out = *v;
@@ -108,26 +102,6 @@ static size_t acp_gotoCell(const char *pack_str, int cell_ind){
 	return i;
 }
 
-int acp_packGetCmd(const char *pack_str, char *out, size_t out_len){
-	size_t pl = strlen(pack_str);
-	size_t j = 0UL;
-	for(size_t i = 1; i < pl; i++){
-		char c = pack_str[i];
-		if( c == ACP_DELIMITER_COLUMN){
-			if(i > 1){return 1;} else {return 0;}
-		}
-		if(!acp_goodCmdChar((int) c)){
-			return 0;
-		}
-		if(j < out_len){
-			out[j] = c;j++;
-		}else{
-			return 0;
-		}
-	}
-	return 0;
-}
-
 int acp_packGetCellS (const char *pack_str, int cell_ind, char *out, size_t len){
 	size_t si = acp_gotoCell(pack_str, cell_ind);
 	size_t plen = strlen(pack_str);
@@ -188,136 +162,158 @@ int acp_packGetCellUl(const char *pack_str, int cell_ind, unsigned long *out){
 
 int acp_packGetFTS(const char *pack_str, int channel_id, FTS *out){
 	int tchannel_id;
-	if(!acp_packGetCellI (pack_str, 0, &tchannel_id)){
+	if(pack_str[ACP_BUF_IND_SIGN] != ACP_SIGN_RESPONSE){
+		return 0;
+	}
+	if(!acp_packGetCellI (pack_str, ACP_IND_ID, &tchannel_id)){
 		return 0;
 	}
 	if(channel_id != tchannel_id){
 		return 0;
 	}
 	FTS tout;
-	if(!acp_packGetCellF (pack_str, 1, &tout.value)){
+	if(!acp_packGetCellF (pack_str, ACP_IND_PARAM1, &tout.value)){
 		return 0;
 	}
-	if(!acp_packGetCellUl (pack_str, 2, &tout.tm.tv_sec)){
+	if(!acp_packGetCellUl (pack_str, ACP_IND_PARAM2, &tout.tm.tv_sec)){
 		return 0;
 	}
-	if(!acp_packGetCellUl (pack_str, 3, &tout.tm.tv_nsec)){
+	if(!acp_packGetCellUl (pack_str, ACP_IND_PARAM3, &tout.tm.tv_nsec)){
 		return 0;
 	}
-	if(!acp_packGetCellI (pack_str, 4, &tout.state)){
+	if(!acp_packGetCellI (pack_str, ACP_IND_PARAM4, &tout.state)){
 		return 0;
 	}
 	*out = tout;
 	return 1;
 }
 
-int acp_buildPackS(char *buf, size_t buf_max_len, const char *v1){
-	int r = snprintf(buf, buf_max_len, ADSS "%s" ADCS, v1 );
+int acp_buildPackS(char *buf, size_t buf_max_len, char sign, const char *v1){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%s" ADCS, sign, v1 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackSI(char *buf, size_t buf_max_len, const char *v1, int v2){
-	int r = snprintf(buf, buf_max_len, ADSS "%s" ADCS "%d" ADCS, v1, v2 );
+int acp_buildPackSI(char *buf, size_t buf_max_len, char sign, const char *v1, int v2){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%s" ADCS "%d" ADCS, sign, v1, v2 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackSF(char *buf, size_t buf_max_len, const char *v1, double v2){
-	int r = snprintf(buf, buf_max_len, ADSS "%s" ADCS "%f" ADCS, v1, v2 );
+int acp_buildPackSF(char *buf, size_t buf_max_len, char sign, const char *v1, double v2){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%s" ADCS "%f" ADCS, sign, v1, v2 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackI(char *buf, size_t buf_max_len, int v){
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS, v );
+int acp_buildPackI(char *buf, size_t buf_max_len, char sign, int v){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS, sign, v );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackUl(char *buf, size_t buf_max_len, unsigned long v){
-	int r = snprintf(buf, buf_max_len, ADSS "%lu" ADCS, v );
+int acp_buildPackUl(char *buf, size_t buf_max_len, char sign, unsigned long v){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%lu" ADCS, sign, v );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackF(char *buf, size_t buf_max_len, double v){
-	int r = snprintf(buf, buf_max_len, ADSS "%f" ADCS, v );
+int acp_buildPackF(char *buf, size_t buf_max_len, char sign, double v){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%f" ADCS, sign, v );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackIS(char *buf, size_t buf_max_len, int v1, const char *v2){
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS "%s" ADCS, v1, v2 );
+int acp_buildPackIS(char *buf, size_t buf_max_len, char sign, int v1, const char *v2){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS "%s" ADCS, sign, v1, v2 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackII(char *buf, size_t buf_max_len, int v1, int v2){
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS "%d" ADCS, v1, v2 );
+int acp_buildPackII(char *buf, size_t buf_max_len, char sign, int v1, int v2){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS "%d" ADCS, sign, v1, v2 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackIIII(char *buf, size_t buf_max_len, int v1, int v2, int v3, int v4){
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS "%d" ADCS "%d" ADCS "%d" ADCS, v1, v2, v3, v4 );
+int acp_buildPackIIII(char *buf, size_t buf_max_len, char sign, int v1, int v2, int v3, int v4){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS "%d" ADCS "%d" ADCS "%d" ADCS, sign, v1, v2, v3, v4 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackIUl(char *buf, size_t buf_max_len, int v1, unsigned long v2){
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS "%lu" ADCS, v1, v2 );
+int acp_buildPackIUl(char *buf, size_t buf_max_len, char sign, int v1, unsigned long v2){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS "%lu" ADCS, sign, v1, v2 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
-int acp_buildPackIF(char *buf, size_t buf_max_len, int v1, double v2){
+
+int acp_buildPackIIUl(char *buf, size_t buf_max_len, char sign, int v1, int v2, unsigned long v3){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS "%d" ADCS "%lu" ADCS, sign, v1, v2, v3 );
+	if(r > 0 && r < (int) buf_max_len){
+		return acp_addCRC(buf, buf_max_len);
+	}
+	return 0;
+}
+
+int acp_buildPackIF(char *buf, size_t buf_max_len, char sign, int v1, double v2){
 	FLOAT_SURROGATE_DEF(wv, fv, v2)
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS, v1, wv, fv );
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS, sign, v1, wv, fv );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
-int acp_buildPackIFTS(char *buf, size_t buf_max_len, int v1, FTS *v2){
+
+int acp_buildPackIIF(char *buf, size_t buf_max_len, char sign, int v1, int v2, double v3){
+	FLOAT_SURROGATE_DEF(wv, fv, v3)
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS, sign, v1, v2, wv, fv );
+	if(r > 0 && r < (int) buf_max_len){
+		return acp_addCRC(buf, buf_max_len);
+	}
+	return 0;
+}
+
+int acp_buildPackIFTS(char *buf, size_t buf_max_len, char sign, int v1, FTS *v2){
 	double dv = v2->value;
 	FLOAT_SURROGATE_DEF(wv, fv, dv)
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS "%lu" ADCS "%lu" ADCS "%d" ADCS, v1, wv, fv, v2->tm.tv_sec, v2->tm.tv_nsec, v2->state );
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS "%lu" ADCS "%lu" ADCS "%d" ADCS, sign, v1, wv, fv, v2->tm.tv_sec, v2->tm.tv_nsec, v2->state );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackIUlI(char *buf, size_t buf_max_len, int v1, unsigned long v2, int v3){
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS "%lu" ADCS "%d" ADCS, v1, v2, v3 );
+int acp_buildPackIUlI(char *buf, size_t buf_max_len, char sign, int v1, unsigned long v2, int v3){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS "%lu" ADCS "%d" ADCS, sign, v1, v2, v3 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackIII(char *buf, size_t buf_max_len, int v1, int v2, int v3){
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS "%d" ADCS "%d" ADCS, v1, v2, v3 );
+int acp_buildPackIII(char *buf, size_t buf_max_len, char sign, int v1, int v2, int v3){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS "%d" ADCS "%d" ADCS, sign, v1, v2, v3 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
@@ -325,42 +321,42 @@ int acp_buildPackIII(char *buf, size_t buf_max_len, int v1, int v2, int v3){
 }
 
 
-int acp_buildPackIFI(char *buf, size_t buf_max_len, int v1, double v2, int v3){
+int acp_buildPackIFI(char *buf, size_t buf_max_len, char sign, int v1, double v2, int v3){
 	FLOAT_SURROGATE_DEF(wv, fv, v2)
-	int r = snprintf(buf, buf_max_len, ADSS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS "%d" ADCS, v1, wv, fv, v3 );
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS "%d" ADCS, sign, v1, wv, fv, v3 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackSII(char *buf, size_t buf_max_len, const char *v1, int v2, int v3){
-	int r = snprintf(buf, buf_max_len, ADSS "%s" ADCS "%d" ADCS "%d" ADCS, v1, v2, v3 );
+int acp_buildPackSII(char *buf, size_t buf_max_len, char sign, const char *v1, int v2, int v3){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%s" ADCS "%d" ADCS "%d" ADCS, sign, v1, v2, v3 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackSIII(char *buf, size_t buf_max_len, const char *v1, int v2, int v3, int v4){
-	int r = snprintf(buf, buf_max_len, ADSS "%s" ADCS "%d" ADCS "%d" ADCS "%d" ADCS, v1, v2, v3, v4 );
+int acp_buildPackSIII(char *buf, size_t buf_max_len, char sign, const char *v1, int v2, int v3, int v4){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%s" ADCS "%d" ADCS "%d" ADCS "%d" ADCS, sign, v1, v2, v3, v4 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackSIUl(char *buf, size_t buf_max_len, const char *v1, int v2, unsigned long v3){
-	int r = snprintf(buf, buf_max_len, ADSS "%s" ADCS "%d" ADCS "%lu" ADCS, v1, v2, v3 );
+int acp_buildPackSIUl(char *buf, size_t buf_max_len, char sign, const char *v1, int v2, unsigned long v3){
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%s" ADCS "%d" ADCS "%lu" ADCS, sign, v1, v2, v3 );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}
 	return 0;
 }
 
-int acp_buildPackSIF(char *buf, size_t buf_max_len, const char *v1, int v2, double v3){
+int acp_buildPackSIF(char *buf, size_t buf_max_len, char sign, const char *v1, int v2, double v3){
 	FLOAT_SURROGATE_DEF(wv, fv, v3)
-	int r = snprintf(buf, buf_max_len, ADSS "%s" ADCS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS, v1, v2, wv, fv );
+	int r = snprintf(buf, buf_max_len, ADSS "%c" ADCS "%s" ADCS "%d" ADCS FLOAT_SURROGATE_FORMAT ADCS, sign, v1, v2, wv, fv );
 	if(r > 0 && r < (int) buf_max_len){
 		return acp_addCRC(buf, buf_max_len);
 	}

@@ -13,6 +13,6 @@ void setup(){
 
 void loop() {
 	//stw_start();
-	app_control(&app, serials, acnodes, ACPL_CNODE_COUNT, &channels);
+	app_control(&app, serials, &channels);
 	//stw_stop();
 }

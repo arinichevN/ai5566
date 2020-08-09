@@ -19,12 +19,31 @@
 
 /*
  * -user_config:
- * uncomment the following line if you want to communicate with application
- * using full command set. When commented, your application will run with 
- * default settings, and you will be able to get and set only main parameters, 
- * but this will reduce memory usage.
+ * uncomment the following line if you want to enable serial server,
+ * this allows you to communicate with device over serial interface
  */
-#define SERIAL_INTERFACE_FULL
+#define SERIAL_SERVER
+
+/*
+ * -user_config:
+ * uncomment the following line if you want to get parameters values from
+ * RAM over serial interface
+ */
+#define SERIAL_SERVER_RAM_GET_COMMANDS
+
+/*
+ * -user_config:
+ * uncomment the following line if you want to get parameters values from
+ * NVRAM over serial interface
+ */
+#define SERIAL_SERVER_NVRAM_GET_COMMANDS
+
+/*
+ * -user_config:
+ * uncomment the following line if you want to set parameters values to
+ * NVRAM over serial interface
+ */
+#define SERIAL_SERVER_NVRAM_SET_COMMANDS
 
 /*
  * -user_config:

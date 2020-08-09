@@ -16,13 +16,16 @@
 
 #include "acp/main.c"
 #include "acp/loop/main.c"
-#include "acp/loop/server.c"
 
 #include "app/serial_config.c"
 #include "app/config.c"
 #include "app/serial.c"
 #include "app/main.c"
+
+#ifdef SERIAL_SERVER
 #include "app/server_config.c"
+#include "acp/loop/server.c"
+#endif
 
 #include "util/print_var.c"
 

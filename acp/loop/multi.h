@@ -19,21 +19,13 @@
  */
 
 #include "main.h"
+#include "client.h"
 #include "../../util/caller_queue.h"
-//enum ACPLMstateE {
-	//ACPLM_INIT,
-	//ACPLM_READ_ID,
-	//ACPLM_READ_COMMAND,
-	//ACPLM_READ_DATA1,
-	//ACPLM_READ_DATA2,
-	//ACPLM_READ_DATA3,
-	//ACPLM_CHECK_CRC,
-	//ACPLM_SEND_RESPONSE
-//};
 
-
-extern int acplm_sendSIF(ACPL *acpl, CallerQueue *queue, void *caller, const char *cmd, int channel_id, double v);
-extern int acplm_getFTS(ACPL *acpl, CallerQueue *queue, void *caller, const char *cmd, int channel_id, FTS *out);
+extern int acplm_sendII(ACPL *acpl, CallerQueue *queue, void *caller, char sign, int cmd, int v);
+extern int acplm_sendIIF(ACPL *acpl, CallerQueue *queue, void *caller, char sign, int cmd, int channel_id, double v);
+extern int acplm_getFTS(ACPL *acpl, CallerQueue *queue, void *caller, int cmd, int channel_id, FTS *out);
+extern int acplm_getIS(ACPL *acpl, CallerQueue *queue, void *caller, int cmd, int channel_id, char *out, size_t slen);
 extern void acplm_client(ACPL *acpl, CallerQueue *queue, HardwareSerial *serial);
 
 #endif 

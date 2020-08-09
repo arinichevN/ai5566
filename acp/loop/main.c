@@ -23,7 +23,6 @@ void acpl_reset(ACPL *item){
 	item->state = ACP_INIT;
 }
 
-
 ACPL *acpl_new(){
 	ACPL *out = (ACPL *) malloc(sizeof (ACPL));
 	return out;
