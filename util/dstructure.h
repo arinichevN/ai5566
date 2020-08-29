@@ -3,16 +3,29 @@
 
 #include <limits.h>
 
+#define CONTROL(item) (item)->control(item)
+#define CONTROL_N(item) item.control(&item)
+
+#define LIST_ITEM_SIZE(list) sizeof (*(list)->item)
+
 #define DEC_PLIST(T) typedef struct {T **item; size_t length;size_t max_length;} T##PList;
 #define DEC_LIST(T) typedef struct {T *item; size_t length;size_t max_length;} T##List;
+#define NULL_LIST(list) memset((list)->item,0,LIST_ITEM_SIZE(list) * (list)->max_length );(list)->length=0;
+#define RESET_LIST(list) (list)->item=NULL; (list)->length=0; (list)->max_length=0;
+#define FREE_LIST(list) free((list)->item); RESET_LIST(list)
+#define RESIZE_M_LIST(list, new_length)  if((list)->max_length < new_length){(list)->item = realloc((list)->item, LIST_ITEM_SIZE(list) * new_length );if ((list)->item == NULL) {(list)->max_length=0;(list)->length=0;}else{(list)->max_length=new_length;}}
+#define LIST_PUSH(list, min_alloc_length, new_item) if((list)->max_length<(list)->length+1){if(min_alloc_length<1)return 0;(list)->item=realloc((list)->item, LIST_ITEM_SIZE(list) * ((list)->max_length+min_alloc_length));if((list)->item==NULL){(list)->max_length=0;(list)->length=0;return 0;}(list)->max_length+=min_alloc_length;}(list)->item[(list)->length]=*(new_item);(list)->length++;
+//call it for clear lists
+#define ALLOC_LIST(list, length) if(length>0){(list)->item = calloc(length, LIST_ITEM_SIZE(list));if ((list)->item != NULL)(list)->max_length=length;}
 
-#define NULL_LIST(list) memset((list)->item,0,(list)->max_length * sizeof (*(list)->item));(list)->length=0;
+
+
 #define LIST_RESET(list) (list)->item=NULL; (list)->length=0; (list)->max_length=0;
 #define LIST_FREE(list) free((list)->item); LIST_RESET(list)
-#define RESIZE_M_LIST(list, new_length)  if((list)->max_length < new_length){(list)->item = realloc((list)->item, new_length * sizeof (*(list)->item));if ((list)->item == NULL) {(list)->max_length=0;(list)->length=0;}else{(list)->max_length=new_length;}}
-#define LIST_PUSH(list, min_alloc_length, new_item) if((list)->max_length<(list)->length+1){if(min_alloc_length<1)return 0;(list)->item=realloc((list)->item, ((list)->max_length+min_alloc_length)*sizeof (*(list)->item));if((list)->item==NULL){(list)->max_length=0;(list)->length=0;return 0;}(list)->max_length+=min_alloc_length;}(list)->item[(list)->length]=*(new_item);(list)->length++;
+#define RESIZE_M_LIST(list, new_length)  if((list)->max_length < new_length){(list)->item = realloc((list)->item, LIST_ITEM_SIZE(list) * new_length );if ((list)->item == NULL) {(list)->max_length=0;(list)->length=0;}else{(list)->max_length=new_length;}}
+#define LIST_PUSH(list, min_alloc_length, new_item) if((list)->max_length<(list)->length+1){if(min_alloc_length<1)return 0;(list)->item=realloc((list)->item, LIST_ITEM_SIZE(list) * ((list)->max_length+min_alloc_length));if((list)->item==NULL){(list)->max_length=0;(list)->length=0;return 0;}(list)->max_length+=min_alloc_length;}(list)->item[(list)->length]=*(new_item);(list)->length++;
 //call it for empty lists
-#define LIST_ALLOC(list, length) if(length>0){(list)->item = calloc(length, sizeof *((list)->item));if ((list)->item != NULL)(list)->max_length=length;}
+#define LIST_ALLOC(list, length) if(length>0){(list)->item = calloc(length, LIST_ITEM_SIZE(list));if ((list)->item != NULL)(list)->max_length=length;}
 
 #define LIST_GETBYFIELD(FIELD, DEST,LIST,NEEDLE) (DEST) = NULL;for (size_t I = 0; I < (LIST)->length; I++) {if ((LIST)->item[I].FIELD == (NEEDLE)) {(DEST) = (LIST)->item + I;}}
 #define LIST_GETBYID(DEST,LIST,ID) LIST_GETBYFIELD(id, DEST,LIST,ID)
@@ -38,7 +51,7 @@
 #define FREE_FIFO(fifo) free((fifo)->item); (fifo)->item=NULL; (fifo)->length=0; (fifo)->pop_item = NULL;(fifo)->push_item = NULL;
 #define DEC_FUN_FIFO_PUSH(T) extern int T ## _fifo_push(T item, FIFOItemList_ ## T *list);
 #define DEC_FUN_FIFO_POP(T) extern int T ## _fifo_pop(T * item, FIFOItemList_ ## T *list);
-#define FIFO_INIT(list, count) (list)->item = malloc(count * sizeof *((list)->item));if ((list)->item == NULL) {(list)->length = 0;}(list)->length = count;for (size_t i = 0; i < (list)->length; i++){if (i == ((list)->length-1)) {(list)->item[i].next = &(list)->item[0];} else {(list)->item[i].next = &(list)->item[i + 1];} if (i == 0) {(list)->item[i].prev = &(list)->item[(list)->length-1];} else {(list)->item[i].prev = &(list)->item[i - 1];} (list)->item[i].free = 1; } (list)->pop_item = NULL; (list)->push_item = &(list)->item[0]; if(!initMutex(&(list)->mutex)){FREE_FIFO(list)}
+#define FIFO_INIT(list, count) (list)->item = malloc(LIST_ITEM_SIZE(list) * count);if ((list)->item == NULL) {(list)->length = 0;}(list)->length = count;for (size_t i = 0; i < (list)->length; i++){if (i == ((list)->length-1)) {(list)->item[i].next = &(list)->item[0];} else {(list)->item[i].next = &(list)->item[i + 1];} if (i == 0) {(list)->item[i].prev = &(list)->item[(list)->length-1];} else {(list)->item[i].prev = &(list)->item[i - 1];} (list)->item[i].free = 1; } (list)->pop_item = NULL; (list)->push_item = &(list)->item[0]; if(!initMutex(&(list)->mutex)){FREE_FIFO(list)}
 
 #define FUN_PIPE_POP(T) T pipe_pop(T ## List *list) {return list->item[list->length-1];}
 #define FUN_PIPE_PUSH(T) void pipe_push(T ## List *list, T value) {for (int i = list->length - 1; i > 0; i--) {list->item[i] = list->item[i - 1];}list->item[0] = value;}
@@ -47,9 +60,15 @@
 //round list. we will push first to free place, if no free place, we will update oldest items
 #define DEC_RLIST(T) typedef struct {T *item;size_t next_ind;size_t length;} T ## RList;
 #define FUN_RLIST_PUSH(T) void push ## T ## RList(T ## RList *list, T value) {if (list->length<=0){return;}list->item[list->next_ind] = value;if (list->next_ind < list->length - 1) {list->next_ind++;} else {list->next_ind = 0;}}
-#define FUN_RLIST_INIT(T) int init ## T ## RList(T ## RList *list, size_t n) {list->length=0;list->item=NULL;if(n<=0){return 1;}list->item = calloc(n, sizeof *(list->item));if (list->item == NULL) {return 0;}list->length=n;return 1;}
+#define FUN_RLIST_INIT(T) int init ## T ## RList(T ## RList *list, size_t n) {list->length=0;list->item=NULL;if(n<=0){return 1;}list->item = calloc(n, LIST_ITEM_SIZE(list));if (list->item == NULL) {return 0;}list->length=n;return 1;}
 #define RESET_RLIST(list) (list)->item=NULL; (list)->length=0;
 #define FREE_RLIST(list) free((list)->item); RESET_RLIST(list)
+
+typedef struct {
+	void **item; 
+	size_t length;
+	size_t max_length;
+} VoidList;
 
 #endif 
 

@@ -13,14 +13,12 @@
 #define ACPL_PACK_START if(!item->pack){if(c == ACP_DELIMITER_START){item->pack = 1;ton_reset(&item->pack_tmr);}else{return ACP_ERROR_NO_START_DELIMITER;}}
 
 void acpl_reset(ACPL *item){
-	if(item == NULL) return;
 	memset(item->buf, 0, sizeof (*item->buf) * ACP_BUF_MAX_LENGTH); 
 	ton_reset(&item->pack_tmr);
 	item->len = 0; 
 	item->pack = 0; 
 	item->wi = 0UL; 
 	item->wbuf_size = 0UL; 
-	item->state = ACP_INIT;
 }
 
 ACPL *acpl_new(){
@@ -28,11 +26,18 @@ ACPL *acpl_new(){
 	return out;
 }
 
-void acpl_begin(ACPL *item) {
-	if(item == NULL) return;
-	ton_setInterval(&item->pack_tmr, ACP_PACK_TIMEOUT_MS);
-	ton_setInterval(&item->busy_tmr, ACP_BUSY_TIMEOUT_MS);
-	acpl_reset(item);
+int acpl_begin(ACPL **item) {
+	ACPL *tacpl = acpl_new();
+	if(tacpl == NULL) return 0;
+	ton_setInterval(&tacpl->pack_tmr, ACP_PACK_TIMEOUT_MS);
+	ton_setInterval(&tacpl->busy_tmr, ACP_BUSY_TIMEOUT_MS);
+	acpl_reset(tacpl);
+	*item = tacpl;
+	return 1;
+}
+
+void acpl_free(ACPL *item){
+	free(item);	
 }
 
 inline void acpl_prepWrite(ACPL *item){
@@ -48,6 +53,7 @@ inline void acpl_prepRead(ACPL *item){
 
 int acpl_readResponse(ACPL *item, HardwareSerial *serial){
 	//printd("(acpl_readPack: ");
+	ton_reset(&item->busy_tmr);
 	while (1) {
 		ACPL_CHECK_BUSY_TIME
 		ACPL_CHECK_PACK_TIME
@@ -70,6 +76,7 @@ int acpl_readResponse(ACPL *item, HardwareSerial *serial){
 
 int acpl_readRequest(ACPL *item, HardwareSerial *serial){
 	//printd("(acpl_readPack: ");
+	ton_reset(&item->busy_tmr);
 	while (1) {
 		ACPL_CHECK_BUSY_TIME
 	    ACPL_CHECK_BUF_LEN
@@ -93,6 +100,7 @@ int acpl_readRequest(ACPL *item, HardwareSerial *serial){
 
 int acpl_write(ACPL *item, HardwareSerial *serial){
 	//printd("(acpl_write: ");
+	ton_reset(&item->busy_tmr);
 	while(1){
 		ACPL_CHECK_BUSY_TIME
 		ACPL_CHECK_PACK_TIME

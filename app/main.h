@@ -5,19 +5,19 @@
 #include "../acp/loop/server.h"
 #include "../util/common.h"
 #include "../util/serial.h"
-#include "../model/channel.h"
+#include "../model/channel/main.h"
 #include "serial.h"
 #include "serial_config.h"
 #include "config.h"
+#include "error_indicator.h"
 
-typedef struct {
+typedef struct app_st{
 	int id;
-	int state;
 	int error_id;
-	int ectl_state;
-	int next_state;
+	AppErrorIndicator error_indicator;
+	void (*control)(struct app_st *);
+	void (*next_control)(struct app_st *);
 } App;
-
 
 extern int appc_checkId(int v);
 extern int appc_checkSerialRate(int v);
@@ -25,7 +25,6 @@ extern int appc_checkSerialConfig(int v);
 
 extern void app_init(App *item);
 extern void app_reset(App *item);
-extern void app_control(App *item, AppSerial serials[], ChannelLList *channels);
 
 extern const char *app_getErrorStr(App *item);
 extern const char *app_getStateStr(App *item);

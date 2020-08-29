@@ -87,6 +87,7 @@ extern void acp_addCRC(char *str);
 
 extern const char *acp_getStateStr(int v);
 extern int acp_packGetCellS (const char *pack_str, int cell_ind, char *out, size_t len);
+extern int acp_packGetCellI (const char *pack_str, int cell_ind, int *out);
 extern int acp_packGetCellF (const char *pack_str, int cell_ind, double *out);
 extern int acp_packGetFTS(const char *pack_str, int channel_id, FTS *out);
 

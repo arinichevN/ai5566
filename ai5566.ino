@@ -13,6 +13,6 @@ void setup(){
 
 void loop() {
 	//stw_start();
-	app_control(&app, serials, &channels);
+	CONTROL_N(app);
 	//stw_stop();
 }

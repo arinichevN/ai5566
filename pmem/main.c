@@ -1,4 +1,4 @@
-#include "pmem.h"
+#include "main.h"
 
 #define PMEM_APP_SIZE sizeof(AppConfig)
 #define PMEM_CRC_SIZE sizeof(uint8_t)

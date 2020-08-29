@@ -33,20 +33,22 @@
 #endif
 #define SERIAL_COUNT S0 + S1 + S2 + S3
 
-#define FOREACH_SERIAL(I) for(size_t I = 0; I<SERIAL_COUNT; I++){
+#define FOREACH_SERIAL(I) for(size_t I = 0; I<SERIAL_COUNT; I++)
 	
-typedef struct {
+typedef struct app_serial_st {
 	int id; //SerialIdE from util/serial.h
 	HardwareSerial *device;
-	ACPL *acpl;
+	void *controller;
 	int kind;
+	void (*control) (struct app_serial_st *);
+	void (*free) (struct app_serial_st *);
 } AppSerial;
 
 
 extern void appSerials_init(AppSerial serials[]);
 extern int appSerial_beginKind(AppSerial *serial, AppSerialConfig *config, HardwareSerial **serial_debug);
-extern void appSerials_print(AppSerial serials[]);
 extern void appSerials_control(AppSerial serials[]);
 extern AppSerial *appSerials_getClientSerialById(AppSerial serials[], int id);
+#define appSerial_free(item) item->free(item)
 
 #endif

@@ -2,7 +2,7 @@
 
 static int appConfig_check (AppConfig *item){
 	int r = ERROR_NO;
-	FOREACH_SERIAL(i)
+	FOREACH_SERIAL(i){
 		r = appSerialConfig_check(&item->serial[i]);
 		if(r != ERROR_NO) return r;
 	}

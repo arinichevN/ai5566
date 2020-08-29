@@ -7,16 +7,18 @@
 #include "util/check.c"
 #include "util/ton.c"
 #include "util/serial.c"
-#include "util/pmem.c"
+#include "pmem/main.c"
 
 #include "model/sensor/max6675.c"
 #include "model/sensor/max31855.c"
 #include "model/sensor/main.c"
-#include "model/channel.c"
+#include "model/channel/default.c"
+#include "model/channel/main.c"
 
 #include "acp/main.c"
 #include "acp/loop/main.c"
 
+#include "app/error_indicator.c"
 #include "app/serial_config.c"
 #include "app/config.c"
 #include "app/serial.c"

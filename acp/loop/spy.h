@@ -3,25 +3,27 @@
 
 #include "main.h"
 
-typedef struct {
+typedef struct acply_st{
 	int last_id;
 	VoidList client_list;
 	int (*onRequestFunction) (void *, int, int);
 	void (*onResponseFunction)(void *, char *, int, int);
-} ACPLSpy;
+	ACPL *acpl;
+	void (*control) (struct acply_st *, HardwareSerial *);
+} ACPLY;
 
-extern int acpl_spyInitClients(ACPLSpy *item, size_t count);
+extern int acply_initClients(ACPLY *item, size_t count);
 
-extern void acpl_spyAddClient(ACPLSpy *item, void *client);
+extern int acply_addClient(ACPLY *item, void *client);
 
-extern int acpl_spyDelClient(ACPLSpy *item, void *client);
+extern int acply_delClient(ACPLY *item, void *client);
 
-extern void acpl_spyFree(ACPLSpy *item);
+extern void acply_free(ACPLY *item);
 
-extern void acpl_spyReset(ACPLSpy *item);
+extern int acply_begin(ACPLY **item);
 
-extern int acpl_spyInit(ACPLSpy *item, size_t client_count, int (*onRequestFunction) (void *, int, char*), void (*onResponseFunction)(void *, char *, int, int));
+extern int acply_setParam(ACPLY *item, size_t client_count, int (*onRequestFunction) (void *, int, int), void (*onResponseFunction)(void *, char *, int, int));
 
-extern void acpl_spy(ACPLSpy *item, ACPL *acpl, HardwareSerial *serial);
+#define acply_control(item, serial) (item)->control(item, serial)
 
 #endif

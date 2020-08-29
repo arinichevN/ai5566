@@ -1,6 +1,12 @@
-#include "channel.h"
+#include "main.h"
 
 Channel channel_buf[CHANNEL_COUNT];
+extern const ChannelParam CHANNEL_DEFAULT_PARAMS[];
+
+void channel_INIT(Channel *item);
+void channel_RUN(Channel *item);
+void channel_OFF(Channel *item);
+void channel_FAILURE(Channel *item);
 
 void channel_setDeviceKind(Channel *item, int kind){
 	switch(kind){
@@ -40,13 +46,10 @@ int channel_check(Channel *item){
 }
 
 const char *channel_getStateStr(Channel *item){
-	switch(item->state){
-		case RUN: return "RUN";
-		case OFF: return "OFF";
-		case FAILURE: return "FAILURE";
-		case DISABLE: return "DISABLE";
-		case INIT: return "INIT";
-	}
+	if(item->control == channel_RUN)			return "RUN";
+	else if(item->control == channel_OFF)		return "OFF";
+	else if(item->control == channel_FAILURE)	return "FAILURE";
+	else if(item->control == channel_INIT)		return "INIT";
 	return "?";
 }
 
@@ -55,10 +58,14 @@ const char *channel_getErrorStr(Channel *item){
 }
 
 void channel_setDefaults(Channel *item, size_t ind){
-	channel_setDeviceKind(item, DEFAULT_CHANNEL_DEVICE_KIND);
-	ton_setInterval(&item->tmr, DEFAULT_CHANNEL_POLL_INTERVAL_MS);
-	item->id = ind + DEFAULT_CHANNEL_FIRST_ID;
-	item->enable = DEFAULT_CHANNEL_ENABLE;
+	const ChannelParam *param = &CHANNEL_DEFAULT_PARAMS[ind];
+	item->sensor.cs = param->cs;
+	item->sensor.sclk = param->sclk;
+	item->sensor.miso = param->miso;
+	channel_setDeviceKind(item, param->device_kind);
+	ton_setInterval(&item->tmr, param->poll_interval);
+	item->id = param->id;
+	item->enable = param->enable;
 }
 
 static void channel_setFromNVRAM(Channel *item, size_t ind){
@@ -69,14 +76,7 @@ static void channel_setFromNVRAM(Channel *item, size_t ind){
 	}
 }
 
-void channel_setStaticParam(Channel *item, int cs, int sclk, int miso){
-	item->sensor.cs = cs;
-	item->sensor.sclk = sclk;
-	item->sensor.miso = miso;
-}
-
-void channel_begin(Channel *item, size_t ind, int default_btn){
-	printd("beginning channel ");printd(ind); printdln(":");
+void channel_setParam(Channel *item, size_t ind, int default_btn){
 	if(default_btn == BUTTON_DOWN){
 		channel_setDefaults(item, ind);
 		pmem_saveChannel(item, ind);
@@ -86,7 +86,13 @@ void channel_begin(Channel *item, size_t ind, int default_btn){
 		printd("\tNVRAM param\n");
 	}
 	item->ind = ind;
-	item->state = INIT;
+}
+
+void channel_begin(Channel *item, size_t ind, int default_btn){
+	printd("beginning channel ");printd(ind); printdln(":");
+	item->error_id = ERROR_NO;
+	channel_setParam(item, ind, default_btn);
+	item->control = channel_INIT;
 	printd("\tid: ");printdln(item->id);
 	printd("\n");
 }
@@ -104,38 +110,19 @@ void channels_buildFromArray(ChannelLList *channels, Channel arr[]){
 	}
 }
 
-#define SET_CHANNEL_STATIC_PARAM(CS, SCLK, MISO) if(chn != NULL){channel_setStaticParam(chn, CS, SCLK, MISO);chn = chn->next;} else {printdln("call SET_CHANNEL_STATIC_PARAM for each channel"); return 0;}
-int channels_begin(ChannelLList *channels, int default_btn){
+void channels_begin(ChannelLList *channels, int default_btn){
 	extern Channel channel_buf[CHANNEL_COUNT];
 	channels_buildFromArray(channels, channel_buf);
-	Channel *chn = channels->top;
-	
-	/* 
-	 * -user_config:
-	 * call
-	 * SET_CHANNEL_STATIC_PARAM(int cs, int sclk, int miso)
-	 * for each channel:
-	*/
-	SET_CHANNEL_STATIC_PARAM(2, 6, 5);
-	SET_CHANNEL_STATIC_PARAM(3, 6, 5);
-	SET_CHANNEL_STATIC_PARAM(7, 6, 5);
-	
-	if(chn != NULL){
-		printd("number of calles of SET_CHANNEL_STATIC_PARAM() should be equal to CHANNEL_COUNT");
-		return 0;
-	}
 	size_t i = 0;
-	FOREACH_CHANNEL(channels)
+	FOREACH_CHANNEL(channels){
 		channel_begin(channel, i, default_btn); i++;
-		if(channel->error_id != ERROR_NO) return 0;
 	}
-	return 1;
 }
 
 int channel_start(Channel *item){
 	printd("starting channel ");printd(item->ind);printdln(":");
 	item->enable = YES;
-	item->state = INIT;
+	item->control = channel_INIT;
 	PmemChannel pchannel;
 	if(pmem_getPChannel(&pchannel, item->ind)){
 		pchannel.enable = item->enable;
@@ -147,7 +134,7 @@ int channel_start(Channel *item){
 int channel_stop(Channel *item){
 	printd("stopping channel ");printdln(item->ind); 
 	item->enable = NO;
-	item->state = INIT;
+	item->control = channel_INIT;
 	PmemChannel pchannel;
 	if(pmem_getPChannel(&pchannel, item->ind)){
 		pchannel.enable = item->enable;
@@ -159,13 +146,13 @@ int channel_stop(Channel *item){
 int channel_reload(Channel *item){
 	printd("reloading channel ");printd(item->ind); printdln(":");
 	channel_setFromNVRAM(item, item->ind);
-	item->state = INIT;
+	item->control = channel_INIT;
 	return 1;
 }
 
 int channels_activeExists(ChannelLList *channels){
-	FOREACH_CHANNEL(channels)
-		if(channel->state != OFF){
+	FOREACH_CHANNEL(channels){
+		if(channel->control != channel_OFF){
 			return 1;
 		}
 	}
@@ -173,7 +160,7 @@ int channels_activeExists(ChannelLList *channels){
 }
 
 void channels_stop(ChannelLList *channels){
-	FOREACH_CHANNEL(channels)
+	FOREACH_CHANNEL(channels){
 		channel_stop(channel);
 	}
 }
@@ -182,7 +169,7 @@ int channels_getIdFirst(ChannelLList *channels, int *out){
 	int success = 0;
 	int f = 0;
 	int v;
-	FOREACH_CHANNEL(channels)
+	FOREACH_CHANNEL(channels){
 		if(!f) { v=channel->id; f=1; success=1;}
 		if(channel->id < v) v = channel->id;
 	}
@@ -200,45 +187,90 @@ unsigned long CHANNEL_FUN_GET(poll_interval)(Channel *item){
 
 int CHANNEL_FUN_GET(enable) (Channel *item){return item->enable;}
 
-int channel_control(Channel *item){
-	switch(item->state){
-		case RUN:
-			if(tonr(&item->tmr)){
-				int r = sensor_read(&item->sensor, &item->out.value);
-				item->out.tm = getCurrentTs();
-				item->error_id = r;
-				if(r != ERROR_NO){
-					item->out.state = 0;
-				}else{
-					item->out.state = 1;
-				}
-				printd("result: "); printd(item->id); printd(" "); printd(item->out.state); printd(" "); printdln(item->out.value); 
-			}
-			break;
-		case OFF:
-			break;
-		case FAILURE:
-			break;
-		case INIT:
-			item->error_id = ERROR_NO;
-			item->out.state = 0;
-			item->out.tm = getCurrentTs();
-			item->error_id = channel_check(item);
-		    if(item->error_id != ERROR_NO){
-		        item->state = FAILURE;
-		        break;
-		    }
-			item->state = OFF;
-			if(item->enable == YES){
-				sensor_begin(&item->sensor);
-				ton_reset(&item->tmr);
-				item->state = RUN;
-			}
-			break;
-		default:
-			break;
+void channel_INIT(Channel *item){
+	if(item->error_id != ERROR_NO){
+        item->control = channel_FAILURE;
+        return;
+    }
+	item->out.state = 0;
+	item->out.tm = getCurrentTs();
+	item->error_id = channel_check(item);
+    if(item->error_id != ERROR_NO){
+        item->control = channel_FAILURE;
+        return;
+    }
+	item->control = channel_OFF;
+	if(item->enable == YES){
+		sensor_begin(&item->sensor);
+		ton_reset(&item->tmr);
+		item->control = channel_RUN;
 	}
-	return item->state;
 }
+
+void channel_RUN(Channel *item){
+	if(tonr(&item->tmr)){
+		int r = sensor_read(&item->sensor, &item->out.value);
+		item->out.tm = getCurrentTs();
+		item->error_id = r;
+		if(r != ERROR_NO){
+			item->out.state = 0;
+		}else{
+			item->out.state = 1;
+		}
+		printd("result: "); printd(item->id); printd(" "); printd(item->out.state); printd(" "); printdln(item->out.value); 
+	}
+}
+
+void channel_OFF(Channel *item){
+	;
+}
+
+void channel_FAILURE(Channel *item){
+	;
+}
+
+//int channel_control(Channel *item){
+	//switch(item->state){
+		//case RUN:
+			//if(tonr(&item->tmr)){
+				//int r = sensor_read(&item->sensor, &item->out.value);
+				//item->out.tm = getCurrentTs();
+				//item->error_id = r;
+				//if(r != ERROR_NO){
+					//item->out.state = 0;
+				//}else{
+					//item->out.state = 1;
+				//}
+				//printd("result: "); printd(item->id); printd(" "); printd(item->out.state); printd(" "); printdln(item->out.value); 
+			//}
+			//break;
+		//case OFF:
+			//break;
+		//case FAILURE:
+			//break;
+		//case INIT:
+			//if(item->error_id != ERROR_NO){
+		        //item->state = FAILURE;
+		        //break;
+		    //}
+			//item->out.state = 0;
+			//item->out.tm = getCurrentTs();
+			//item->error_id = channel_check(item);
+		    //if(item->error_id != ERROR_NO){
+		        //item->state = FAILURE;
+		        //break;
+		    //}
+			//item->state = OFF;
+			//if(item->enable == YES){
+				//sensor_begin(&item->sensor);
+				//ton_reset(&item->tmr);
+				//item->state = RUN;
+			//}
+			//break;
+		//default:
+			//break;
+	//}
+	//return item->state;
+//}
 
 
