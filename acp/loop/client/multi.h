@@ -18,9 +18,10 @@
  * concurrently using UART.
  */
 
+#include "../main.h"
+#include "../../../util/caller_queue.h"
 #include "main.h"
-#include "client.h"
-#include "../../util/caller_queue.h"
+
 
 typedef struct acplcm_st{
 	ACPLC *acplc;

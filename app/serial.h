@@ -4,7 +4,6 @@
 #include "../util/serial.h"
 #include "../acp/loop/main.h"
 #include "../acp/loop/server.h"
-#include "../acp/loop/client.h"
 #include "serial_config.h"
 
 #define S0 0

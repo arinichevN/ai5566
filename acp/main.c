@@ -69,7 +69,7 @@ uint8_t acp_getPackCRC(const char *pack_str){
 int acp_addCRC(char *buf, size_t buf_len){
 	uint8_t crc = acp_calcStrCRC(buf);
 	size_t l = strlen(buf);
-	if((l + 3) > buf_len) {return 0;}
+	if((l + 3) > buf_len) {printdln("acp: failed to add crc"); return 0;}
 	buf[l] = crc;
 	buf[l+1] = ACP_DELIMITER_END;
 	buf[l+2] = '\0';

@@ -1,5 +1,4 @@
-#include "client_multi.h"
-
+#include "multi.h"
 
 int acplcm_sendII(ACPLCM *item, void *caller, char sign, int cmd, int v){
 	int r = cq_control(item->queue, caller);

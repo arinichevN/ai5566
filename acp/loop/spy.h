@@ -1,6 +1,7 @@
 #ifndef ACPL_SPY_H
 #define ACPL_SPY_H
 
+#include "../../util/dstructure.h"
 #include "main.h"
 
 typedef struct acply_st{
