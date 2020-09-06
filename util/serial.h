@@ -29,6 +29,7 @@ enum AppSerialKindE{
 	APP_SERIAL_KIND_SERVER,
 	APP_SERIAL_KIND_CLIENT,
 	APP_SERIAL_KIND_DEBUG,
+	APP_SERIAL_KIND_SPY
 };
 
 extern long int serial_getRate (uint8_t v);

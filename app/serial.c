@@ -22,7 +22,10 @@ static void appSerial_freeServer(AppSerial *serial){
 
 static int appSerial_beginServer(AppSerial *item){
 	ACPLS *controller = NULL;
-	if(!acpls_begin(&controller)) return 0;
+	if(!acpls_begin(&controller)) {
+		printd("server begin failed where id = "); printdln(item->id);
+		return 0;
+	}
 	item->controller = (void *) controller;
 	item->control = appSerial_controlServer;
 	item->free = appSerial_freeServer;
@@ -81,6 +84,7 @@ int appSerial_beginKind(AppSerial *serial, AppSerialConfig *config, HardwareSeri
 			if(!appSerial_beginServer(serial)){
 				 return ERROR_SERIAL_BEGIN;
 			}
+			serial->kind = config->kind;
 			printdln(": server");
 			break;
 #endif
@@ -88,6 +92,7 @@ int appSerial_beginKind(AppSerial *serial, AppSerialConfig *config, HardwareSeri
 			if(*serial_debug == NULL){
 				appSerial_beginDevice(config, serial->device);
 				*serial_debug = serial->device;
+				serial->kind = config->kind;
 				printdln(": debug");
 			}
 			break;
@@ -95,7 +100,6 @@ int appSerial_beginKind(AppSerial *serial, AppSerialConfig *config, HardwareSeri
 			printdln(": unknown");
 			break;
 	}
-	serial->kind = config->kind;
 	return ERROR_NO;
 }
 

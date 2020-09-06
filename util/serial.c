@@ -72,6 +72,7 @@ int serial_checkAppKind(int v){
 		case APP_SERIAL_KIND_SERVER:
 		case APP_SERIAL_KIND_CLIENT:
 		case APP_SERIAL_KIND_DEBUG:
+		case APP_SERIAL_KIND_SPY:
 			return 1;
 	}
 	return 0;
@@ -156,6 +157,7 @@ const char *serial_getAppKindStr(int v){
 		case APP_SERIAL_KIND_SERVER:	return "server";
 		case APP_SERIAL_KIND_CLIENT:	return "client";
 		case APP_SERIAL_KIND_DEBUG:		return "debug";
+		case APP_SERIAL_KIND_SPY:		return "spy";
 	}	
 	return "?";
 }
