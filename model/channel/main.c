@@ -134,6 +134,7 @@ int channel_start(Channel *item){
 int channel_stop(Channel *item){
 	printd("stopping channel ");printdln(item->ind); 
 	item->enable = NO;
+	item->out.state = 0;
 	item->control = channel_INIT;
 	PmemChannel pchannel;
 	if(pmem_getPChannel(&pchannel, item->ind)){
