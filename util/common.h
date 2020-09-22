@@ -49,9 +49,7 @@ enum StateE {
 	DSTEP2,
 	TEST_UA,
 	SPY,
-	CLIENT,
-	WAIT_ON,
-	WAIT_OFF
+	CLIENT
 };
 
 enum ErrorE {
@@ -61,6 +59,7 @@ enum ErrorE {
 	
 	WARNING_READ,
 	WARNING_BAD_DATA,
+	ERROR_PARAM,
 	ERROR_SUBBLOCK,
 	ERROR_BLOCK_STATUS,
 	ERROR_DEVICE_KIND,
@@ -95,13 +94,14 @@ enum ErrorE {
 	ERROR_TERMOCOUPLE_OPEN,
 	ERROR_TERMOCOUPLE_SC_VCC,
 	ERROR_TERMOCOUPLE_SC_GND,
-		
+	ERROR_RTC,
 	ERROR_COUNT
 };
 
 #define BUTTON_DOWN 0
 #define BUTTON_UP 1
 
+#define ERROR_NO 0
 typedef enum {
 	NO=0,
 	YES=1
@@ -109,6 +109,7 @@ typedef enum {
 
 typedef enum {
 	DEVICE_KIND_UNKNOWN=0,
+	DEVICE_KIND_DSERIAL,
 	DEVICE_KIND_MAX6675,
 	DEVICE_KIND_MAX31855,
 	DEVICE_KIND_DS18B20,
@@ -117,8 +118,11 @@ typedef enum {
 	DEVICE_KIND_DHT22,
 	DEVICE_KIND_DHT22T,	//temperature
 	DEVICE_KIND_DHT22H,	//humidity
+	DEVICE_KIND_DS3231,
 	DEVICE_KIND_TIMER,
-	DEVICE_KIND_DS3231
+	DEVICE_KIND_INDICATOR,
+	DEVICE_KIND_MAX7219,
+	DEVICE_KIND_TM1637
 } DeviceKind;
 
 struct timespec{
@@ -131,11 +135,6 @@ typedef struct {
 	struct timespec tm;
 	int state;
 } FTS;
-
-typedef uint8_t id_t;
-typedef uint8_t kind_t;
-typedef uint8_t errorid_t;
-typedef uint8_t state_t;
 
 #define ARRLEN(A) (sizeof(A) / sizeof((A)[0]))
 

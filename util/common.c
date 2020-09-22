@@ -73,6 +73,7 @@ const char *getErrorStr(int v){
 		case ERROR_TERMOCOUPLE_OPEN:		return "Etmco";
 		case ERROR_TERMOCOUPLE_SC_VCC:		return "Etmcsv";
 		case ERROR_TERMOCOUPLE_SC_GND:		return "Etmcsg";
+		case ERROR_RTC:						return "Ertc";
 	}
 	return "?";
 }
