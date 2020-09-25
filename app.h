@@ -8,7 +8,7 @@
  * You can find default values in ./app/main.c, ./app/main.h, ./model/channel.h
  * files.
  */
-#define DEFAULT_CONTROL_PIN 4
+#define DEFAULT_CONTROL_PIN 2
 
 /*
  * -user_config:

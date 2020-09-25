@@ -11,6 +11,8 @@ const char *acp_getStateStr(int v){
 		case ACP_INIT:return "ACP_INIT";
 		case ACP_READ_REQUEST:return "ACP_READ_REQUEST";
 		case ACP_CONSIDER_PACK:return "ACP_CONSIDER_PACK";
+		case ACP_CONSIDER_REQUEST:return "ACP_CONSIDER_REQUEST";
+		case ACP_CONSIDER_RESPONSE:return "ACP_CONSIDER_RESPONSE";
 		case ACP_READ_RESPONSE:return "ACP_READ_RESPONSE";
 		case ACP_SEND_RESPONSE:return "ACP_SEND_RESPONSE";
 		case ACP_SEND_REQUEST:return "ACP_SEND_REQUEST";
@@ -26,6 +28,7 @@ const char *acp_getStateStr(int v){
 		case ACP_ERROR_FORMAT:return "ACP_ERROR_FORMAT";
 		case ACP_ERROR_WRITE:return "ACP_ERROR_WRITE";
 		case ACP_ERROR_CRC:return "ACP_ERROR_CRC";
+		case ACP_ERROR_SIGN:return "ACP_ERROR_SIGN";
 		case ACP_ERROR_BUSY:return "ACP_ERROR_BUSY";
 		case ACP_ERROR_QUEUE:return "ACP_ERROR_QUEUE";
 		case ACP_ERROR_ACPL_IS_NULL:return "ACP_ERROR_ACPL_IS_NULL";
@@ -105,12 +108,13 @@ static size_t acp_gotoCell(const char *pack_str, int cell_ind){
 int acp_packGetCellS (const char *pack_str, int cell_ind, char *out, size_t len){
 	size_t si = acp_gotoCell(pack_str, cell_ind);
 	size_t plen = strlen(pack_str);
-	for(size_t i = 0;i<len;i++){
+	for(size_t i = 0; i<len; i++){
 		size_t pi = si + i;
 		if(pi >= plen){printd("(getS: pi>=plen) "); return 0;}
 		char c = pack_str[pi];
 		writed(c);
 		if(c == ACP_DELIMITER_COLUMN || c == ACP_DELIMITER_END){
+			out[i] = '\0';
 			return 1;
 		}
 		out[i] = c;
@@ -161,27 +165,35 @@ int acp_packGetCellUl(const char *pack_str, int cell_ind, unsigned long *out){
 //}
 
 int acp_packGetFTS(const char *pack_str, int channel_id, FTS *out){
-	int tchannel_id;
-	if(pack_str[ACP_BUF_IND_SIGN] != ACP_SIGN_RESPONSE){
+	printdln(pack_str);
+	if(pack_str[ACP_IND_SIGN] != ACP_SIGN_RESPONSE){
+		printd("acp_packGetFTS: bad sign: "); printdln(pack_str[ACP_IND_SIGN]);
 		return 0;
 	}
-	if(!acp_packGetCellI (pack_str, ACP_IND_ID, &tchannel_id)){
+	int tchannel_id;
+	if(!acp_packGetCellI (pack_str, ACP_RESPONSE_IND_ID, &tchannel_id)){
+		printdln("acp_packGetFTS: failed to get channel_id");
 		return 0;
 	}
 	if(channel_id != tchannel_id){
+		printd("acp_packGetFTS: bad channel_id "); printd(channel_id); printd(" "); printdln(tchannel_id);
 		return 0;
 	}
 	FTS tout;
-	if(!acp_packGetCellF (pack_str, ACP_IND_PARAM1, &tout.value)){
+	if(!acp_packGetCellF (pack_str, ACP_RESPONSE_IND_PARAM1, &tout.value)){
+		printdln("acp_packGetFTS: failed to get value");
 		return 0;
 	}
-	if(!acp_packGetCellUl (pack_str, ACP_IND_PARAM2, &tout.tm.tv_sec)){
+	if(!acp_packGetCellUl (pack_str, ACP_RESPONSE_IND_PARAM2, &tout.tm.tv_sec)){
+		printdln("acp_packGetFTS: failed to get tv_sec");
 		return 0;
 	}
-	if(!acp_packGetCellUl (pack_str, ACP_IND_PARAM3, &tout.tm.tv_nsec)){
+	if(!acp_packGetCellUl (pack_str, ACP_RESPONSE_IND_PARAM3, &tout.tm.tv_nsec)){
+		printdln("acp_packGetFTS: failed to get tv_nsec");
 		return 0;
 	}
-	if(!acp_packGetCellI (pack_str, ACP_IND_PARAM4, &tout.state)){
+	if(!acp_packGetCellI (pack_str, ACP_RESPONSE_IND_PARAM4, &tout.state)){
+		printdln("acp_packGetFTS: failed to get state");
 		return 0;
 	}
 	*out = tout;

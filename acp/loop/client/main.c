@@ -10,7 +10,10 @@ void acplc_ERROR(ACPLC *item, HardwareSerial *serial);
 	
 	
 ACPLC *acplc_new(){
-	ACPLC *out = (ACPLC *) malloc(sizeof (ACPLC));
+	size_t sz = sizeof (ACPLC);
+	ACPLC *out = (ACPLC *) malloc(sz);
+	if(out == NULL){ printdln("acplc_new: failed");}
+	printd("acplc_new: "); printd(sz); printdln(" bytes allocated");
 	return out;
 }
 

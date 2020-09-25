@@ -11,18 +11,17 @@
 #include "../util/common.h"
 #include "../util/ton.h"
 
-//#define ACP_CMD_MAX_LENGTH 16
-#define ACP_BUF_MAX_LENGTH 64
-#define ACP_CRC_BUF_MAX_LENGTH 2
-#define ACP_MIN_PACK_LENGTH 7
-#define ACP_CRC_INI 33
-#define ACP_CRC_EXTRA 11
-#define ACP_FLOAT_BUF_LEN 12
+#define ACP_BUF_MAX_LENGTH			64
+#define ACP_CRC_BUF_MAX_LENGTH		2
+#define ACP_MIN_PACK_LENGTH			7
+#define ACP_CRC_INI					33
+#define ACP_CRC_EXTRA				11
+#define ACP_FLOAT_BUF_LEN			12
 
-#define ACP_CHECK_CRC 1
+#define ACP_CHECK_CRC				1
 
-#define ACP_PACK_TIMEOUT_MS 500UL
-#define ACP_BUSY_TIMEOUT_MS 300UL
+#define ACP_PACK_TIMEOUT_MS			500UL
+#define ACP_BUSY_TIMEOUT_MS			300UL
 
 #define ACP_DELIMITER_START			'<'
 #define ACP_DELIMITER_COLUMN		';'
@@ -39,13 +38,20 @@
 #define ADCS ACP_DELIMITER_COLUMN_STR 
 #define ADES ACP_DELIMITER_END_STR
 
-#define ACP_BUF_IND_SIGN 1
-#define ACP_IND_CMD 1
-#define ACP_IND_ID 2
-#define ACP_IND_PARAM1 3
-#define ACP_IND_PARAM2 4
-#define ACP_IND_PARAM3 5
-#define ACP_IND_PARAM4 6
+#define ACP_IND_SIGN				1
+
+#define ACP_REQUEST_IND_CMD			1
+#define ACP_REQUEST_IND_ID			2
+#define ACP_REQUEST_IND_PARAM1		3
+#define ACP_REQUEST_IND_PARAM2		4
+#define ACP_REQUEST_IND_PARAM3		5
+#define ACP_REQUEST_IND_PARAM4		6
+
+#define ACP_RESPONSE_IND_ID			1
+#define ACP_RESPONSE_IND_PARAM1		2
+#define ACP_RESPONSE_IND_PARAM2		3
+#define ACP_RESPONSE_IND_PARAM3		4
+#define ACP_RESPONSE_IND_PARAM4		5
 
 enum ACPStateE {
 	ACP_DONE,

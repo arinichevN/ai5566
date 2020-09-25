@@ -74,7 +74,10 @@ int acplcm_getIS(ACPLCM *item, void *caller, int cmd, int channel_id, char *out,
 }
 
 ACPLCM *acplcm_new(){
-	ACPLCM *out = (ACPLCM *) malloc(sizeof (ACPLCM));
+	size_t sz = sizeof (ACPLCM);
+	ACPLCM *out = (ACPLCM *) malloc(sz);
+	if(out == NULL){ printdln("acplcm_new: failed");}
+	printd("acplcm_new: "); printd(sz); printdln(" bytes allocated");
 	return out;
 }
 

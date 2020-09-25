@@ -20,7 +20,10 @@ void acpls_CONSIDER_REQUEST(ACPLS *item, HardwareSerial *serial);
 void acpls_SEND_RESPONSE(ACPLS *item, HardwareSerial *serial);
 
 ACPLS *acpls_new(){
-	ACPLS *out = (ACPLS *) malloc(sizeof (ACPLS));
+	size_t sz = sizeof (ACPLS);
+	ACPLS *out = (ACPLS *) malloc(sz);
+	if(out == NULL){ printdln("acpls_new: failed");}
+	printd("acpls_new: "); printd(sz); printdln(" bytes allocated");
 	return out;
 }
 
@@ -62,9 +65,9 @@ void acpls_READ_REQUEST(ACPLS *item, HardwareSerial *serial) {
 
 void acpls_CONSIDER_REQUEST(ACPLS *item, HardwareSerial *serial) {
 	if(acp_packCheckCRC(item->acpl->buf)){
-		if(item->acpl->buf[ACP_BUF_IND_SIGN] == ACP_SIGN_REQUEST){
+		if(item->acpl->buf[ACP_IND_SIGN] == ACP_SIGN_REQUEST){
 			int cmd;
-			if(acp_packGetCellI(item->acpl->buf, ACP_IND_CMD, &cmd)){
+			if(acp_packGetCellI(item->acpl->buf, ACP_REQUEST_IND_CMD, &cmd)){
 				int command_found = 0;
 				for(size_t i = 0; i < ACPL_CNODE_COUNT; i++) {
 					ACPLSCommandNode *cnode = &acnodes[i];

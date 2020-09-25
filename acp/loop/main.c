@@ -22,7 +22,10 @@ void acpl_reset(ACPL *item){
 }
 
 ACPL *acpl_new(){
-	ACPL *out = (ACPL *) malloc(sizeof (ACPL));
+	size_t sz = sizeof (ACPL);
+	ACPL *out = (ACPL *) malloc(sz);
+	if(out == NULL){ printdln("acpl_new: failed");}
+	printd("acpl_new: "); printd(sz); printdln(" bytes allocated");
 	return out;
 }
 
