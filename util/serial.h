@@ -1,7 +1,6 @@
 #ifndef SERIAL1_H
 #define SERIAL1_H
 
-
 enum SerialIdE{
 	SERIAL_IDN,
 	SERIAL_ID0,
@@ -24,22 +23,22 @@ enum SerialRateE{
 	SR_115200
 };
 
-enum AppSerialKindE{
-	APP_SERIAL_KIND_IDLE = 0,
-	APP_SERIAL_KIND_SERVER,
-	APP_SERIAL_KIND_CLIENT,
-	APP_SERIAL_KIND_DEBUG,
-	APP_SERIAL_KIND_SPY
+enum SerialKindE{
+	SERIAL_MODE_IDLE = 0,
+	SERIAL_MODE_SERVER,
+	SERIAL_MODE_CLIENT,
+	SERIAL_MODE_DEBUG,
+	SERIAL_MODE_SPY
 };
 
 extern long int serial_getRate (uint8_t v);
 extern uint8_t serial_getRateKind (long int v);
 extern int serial_checkConfig(uint8_t v);
-extern int serial_checkAppKind(int v);
+extern int serial_checkMode(int v);
 extern const char *serial_getConfigStr(uint8_t v);
 extern int serial_checkId(int id);
 extern HardwareSerial *serial_getDeviceById(int id);
-extern const char *serial_getNameStr(int id);
-extern const char *serial_getAppKindStr(int v);
+extern const char *serial_getIdStr(int id);
+extern const char *serial_getModeStr(int v);
 
 #endif 

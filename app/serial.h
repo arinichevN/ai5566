@@ -38,7 +38,7 @@ typedef struct app_serial_st {
 	int id; //SerialIdE from util/serial.h
 	HardwareSerial *device;
 	void *controller;
-	int kind;
+	int mode;
 	void (*control) (struct app_serial_st *);
 	void (*free) (struct app_serial_st *);
 } AppSerial;

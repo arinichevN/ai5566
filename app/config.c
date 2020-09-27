@@ -9,9 +9,9 @@ static int appConfig_check (AppConfig *item){
 	return r;
 }
 
-#define APP_SET_DEFAULT_SERIAL_CONFIG_SERVER	item->serial[i].rate = DEFAULT_APP_SERIAL_RATE; item->serial[i].config = DEFAULT_APP_SERIAL_CONFIG; item->serial[i].kind = APP_SERIAL_KIND_SERVER; item->serial[i].id = sid; i++;
-#define APP_SET_DEFAULT_SERIAL_CONFIG_DEBUG		item->serial[i].rate = DEFAULT_APP_SERIAL_RATE; item->serial[i].config = DEFAULT_APP_SERIAL_CONFIG; item->serial[i].kind = APP_SERIAL_KIND_DEBUG; item->serial[i].id = sid; i++;
-#define APP_SET_DEFAULT_SERIAL_CONFIG_IDLE		item->serial[i].rate = DEFAULT_APP_SERIAL_RATE; item->serial[i].config = DEFAULT_APP_SERIAL_CONFIG; item->serial[i].kind = APP_SERIAL_KIND_IDLE; item->serial[i].id = sid; i++;
+#define APP_SET_DEFAULT_SERIAL_CONFIG_SERVER	item->serial[i].rate = DEFAULT_APP_SERIAL_RATE; item->serial[i].config = DEFAULT_APP_SERIAL_CONFIG; item->serial[i].mode = SERIAL_MODE_SERVER; item->serial[i].id = sid; i++;
+#define APP_SET_DEFAULT_SERIAL_CONFIG_DEBUG		item->serial[i].rate = DEFAULT_APP_SERIAL_RATE; item->serial[i].config = DEFAULT_APP_SERIAL_CONFIG; item->serial[i].mode = SERIAL_MODE_DEBUG; item->serial[i].id = sid; i++;
+#define APP_SET_DEFAULT_SERIAL_CONFIG_IDLE		item->serial[i].rate = DEFAULT_APP_SERIAL_RATE; item->serial[i].config = DEFAULT_APP_SERIAL_CONFIG; item->serial[i].mode = SERIAL_MODE_IDLE; item->serial[i].id = sid; i++;
 
 /*
  * -user_config:
@@ -25,7 +25,7 @@ static void appConfig_setDefault(AppConfig *item){
 	sid = SERIAL_ID0;
 	
 	//-user_config:
-	APP_SET_DEFAULT_SERIAL_CONFIG_DEBUG
+	APP_SET_DEFAULT_SERIAL_CONFIG_SERVER
 	
 #endif
 #ifdef USE_SERIAL1

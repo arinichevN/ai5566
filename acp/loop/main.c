@@ -34,6 +34,8 @@ int acpl_begin(ACPL **item) {
 	if(tacpl == NULL) return 0;
 	ton_setInterval(&tacpl->pack_tmr, ACP_PACK_TIMEOUT_MS);
 	ton_setInterval(&tacpl->busy_tmr, ACP_BUSY_TIMEOUT_MS);
+	ton_reset(&tacpl->pack_tmr);
+	ton_reset(&tacpl->busy_tmr);
 	acpl_reset(tacpl);
 	*item = tacpl;
 	return 1;

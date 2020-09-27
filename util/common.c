@@ -61,7 +61,7 @@ const char *getErrorStr(int v){
 		case ERROR_SERIAL_DEVICE:			return "Eseriald";
 		case ERROR_SERIAL_RATE:				return "Eserialr";
 		case ERROR_SERIAL_CONFIG:			return "Eserialc";
-		case ERROR_SERIAL_KIND:				return "Eserialk";
+		case ERROR_SERIAL_MODE:				return "Eserialm";
 		case ERROR_SERIAL_BEGIN:			return "Eserialb";
 		case ERROR_NO_SERIAL:				return "Enoser";
 		case ERROR_SEND:					return "Esend";

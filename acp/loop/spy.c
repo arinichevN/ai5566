@@ -99,8 +99,9 @@ void acply_READ_REQUEST(ACPLY *item, HardwareSerial *serial) {
 	switch(r){
 		case ACP_BUSY: return;
 		case ACP_DONE: item->control = acply_CONSIDER_REQUEST; return;
-		default: acply_reset(item); return;
 	}
+	printd("acply_READ_REQUEST failed: "); printdln(acp_getStateStr(r));
+	acply_reset(item); 
 }
 
 void acply_CONSIDER_REQUEST(ACPLY *item, HardwareSerial *serial) {
@@ -145,10 +146,11 @@ void acply_CONSIDER_REQUEST(ACPLY *item, HardwareSerial *serial) {
 void acply_READ_RESPONSE(ACPLY *item, HardwareSerial *serial) {
 	int r = acpl_readResponse(item->acpl, serial);
 	switch(r){
-		case ACP_DONE: item->control = acply_CONSIDER_RESPONSE; return;
 		case ACP_BUSY: return;
+		case ACP_DONE: item->control = acply_CONSIDER_RESPONSE; return;
 	}
-	acply_reset(item);
+	printd("acply_READ_RESPONSE failed: "); printdln(acp_getStateStr(r));
+	acply_reset(item); 
 }
 
 void acply_CONSIDER_RESPONSE(ACPLY *item, HardwareSerial *serial) {

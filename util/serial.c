@@ -1,6 +1,5 @@
 #include "serial.h"
 
-
 long int serial_getRate (uint8_t v){
 	switch(v){
 		case SR_300:return 300;
@@ -66,13 +65,13 @@ int serial_checkConfig(uint8_t v){
 	return 0;
 }
 
-int serial_checkAppKind(int v){
+int serial_checkMode(int v){
 	switch(v){
-		case APP_SERIAL_KIND_IDLE:
-		case APP_SERIAL_KIND_SERVER:
-		case APP_SERIAL_KIND_CLIENT:
-		case APP_SERIAL_KIND_DEBUG:
-		case APP_SERIAL_KIND_SPY:
+		case SERIAL_MODE_IDLE:
+		case SERIAL_MODE_SERVER:
+		case SERIAL_MODE_CLIENT:
+		case SERIAL_MODE_DEBUG:
+		case SERIAL_MODE_SPY:
 			return 1;
 	}
 	return 0;
@@ -140,7 +139,7 @@ HardwareSerial *serial_getDeviceById(int id){
 	return NULL;
 }
 
-const char *serial_getNameStr(int id){
+const char *serial_getIdStr(int id){
 	switch(id){
 		case SERIAL_IDN: return "serialNo";
 		case SERIAL_ID0: return "serial0";
@@ -151,13 +150,13 @@ const char *serial_getNameStr(int id){
 	return "?";
 }
 
-const char *serial_getAppKindStr(int v){
+const char *serial_getModeStr(int v){
 	switch(v){
-		case APP_SERIAL_KIND_IDLE:		return "idle";
-		case APP_SERIAL_KIND_SERVER:	return "server";
-		case APP_SERIAL_KIND_CLIENT:	return "client";
-		case APP_SERIAL_KIND_DEBUG:		return "debug";
-		case APP_SERIAL_KIND_SPY:		return "spy";
+		case SERIAL_MODE_IDLE:		return "idle";
+		case SERIAL_MODE_SERVER:	return "server";
+		case SERIAL_MODE_CLIENT:	return "client";
+		case SERIAL_MODE_DEBUG:		return "debug";
+		case SERIAL_MODE_SPY:		return "spy";
 	}	
 	return "?";
 }

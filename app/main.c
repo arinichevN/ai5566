@@ -128,7 +128,7 @@ void app_begin(App *item){
 	if(item->error_id != ERROR_NO){goto err;}
 	item->id = config.id;
 	FOREACH_SERIAL(i){
-		item->error_id = appSerial_beginKind(&serials[i], &config.serial[i], &DEBUG_SERIAL_DEVICE);
+		item->error_id = appSerial_beginMode(&serials[i], &config.serial[i], &DEBUG_SERIAL_DEVICE);
 		if(item->error_id != ERROR_NO) goto err;
 	}
 	channels_begin(&channels, btn);

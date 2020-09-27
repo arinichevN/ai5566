@@ -38,7 +38,7 @@ void appSerials_reset(AppSerial serials[]){
 	FOREACH_SERIAL(i){
 		AppSerial *serial = &serials[i];
 		serial->id = SERIAL_IDN;
-		serial->kind = APP_SERIAL_KIND_IDLE;
+		serial->mode = SERIAL_MODE_IDLE;
 		serial->device = NULL;
 		serial->controller = NULL;
 		serial->control = appSerial_controlIdle;
@@ -68,31 +68,31 @@ void appSerials_init(AppSerial serials[]){
 }
 
 static void appSerial_beginDevice(AppSerialConfig *item, HardwareSerial *serial){
-	if(item->kind != APP_SERIAL_KIND_IDLE){
+	if(item->mode != SERIAL_MODE_IDLE){
 		unsigned long rate = serial_getRate(item->rate);
 		serial->begin(rate, item->config);
 		while(!(*serial)){};
 	}
 }
 
-int appSerial_beginKind(AppSerial *serial, AppSerialConfig *config, HardwareSerial **serial_debug){
+int appSerial_beginMode(AppSerial *serial, AppSerialConfig *config, HardwareSerial **serial_debug){
 	printd("serial"); printd(serial->id);
-	switch (config->kind){
+	switch (config->mode){
 #ifdef SERIAL_SERVER
-		case APP_SERIAL_KIND_SERVER:
+		case SERIAL_MODE_SERVER:
 			appSerial_beginDevice(config, serial->device);
 			if(!appSerial_beginServer(serial)){
 				 return ERROR_SERIAL_BEGIN;
 			}
-			serial->kind = config->kind;
+			serial->mode = config->mode;
 			printdln(": server");
 			break;
 #endif
-		case APP_SERIAL_KIND_DEBUG:
+		case SERIAL_MODE_DEBUG:
 			if(*serial_debug == NULL){
 				appSerial_beginDevice(config, serial->device);
 				*serial_debug = serial->device;
-				serial->kind = config->kind;
+				serial->mode = config->mode;
 				printdln(": debug");
 			}
 			break;
@@ -113,7 +113,7 @@ void appSerials_control(AppSerial serials[] ){
 AppSerial *appSerials_getClientSerialById(AppSerial serials[], int id){
 	FOREACH_SERIAL(i){
 		AppSerial *serial = &serials[i];
-		if(id == serial->id && serial->kind == APP_SERIAL_KIND_CLIENT){
+		if(id == serial->id && serial->mode == SERIAL_MODE_CLIENT){
 			return serial;
 		}
 	}

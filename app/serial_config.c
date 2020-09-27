@@ -9,16 +9,16 @@ static int appSerialConfig_check (AppSerialConfig *item){
 	if(rate <= 0){
 		return ERROR_SERIAL_RATE;
 	} 
-	if(!serial_checkAppKind(item->kind)){
-		return ERROR_SERIAL_KIND;
+	if(!serial_checkMode(item->mode)){
+		return ERROR_SERIAL_MODE;
 	}
 	return ERROR_NO;
 }
 
 APPCONFIGSR_DEF_GET_FIELD_FUNC(rate)
 APPCONFIGSR_DEF_GET_FIELD_FUNC(config)
-APPCONFIGSR_DEF_GET_FIELD_FUNC(kind)
+APPCONFIGSR_DEF_GET_FIELD_FUNC(mode)
 
 APPCONFIGSR_DEF_SET_FIELD_FUNC(rate)
 APPCONFIGSR_DEF_SET_FIELD_FUNC(config)
-APPCONFIGSR_DEF_SET_FIELD_FUNC(kind)
+APPCONFIGSR_DEF_SET_FIELD_FUNC(mode)

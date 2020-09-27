@@ -2,7 +2,6 @@
 extern App app;
 extern AppSerial serials[];
 extern ChannelLList channels;
-extern void print_var(HardwareSerial *serial);
 
 #include "../app/main.h"
 #include "../acp/command/main.h"
@@ -214,12 +213,6 @@ void acnf_getExists(ACPLS *item, HardwareSerial *serial){
 void acnf_getErrorStr(ACPLS *item, HardwareSerial *serial){srvc_getChannelParamStr(item, &channel_getErrorStr);}
 void acnf_getStateStr(ACPLS *item, HardwareSerial *serial){srvc_getChannelParamStr(item, &channel_getStateStr);}
 
-void acnf_getAppVar(ACPLS *item, HardwareSerial *serial){
-	if(!srvc_forThisApp(item)) {ACPLS_RESET return;}
-	print_var(serial);
-	ACPLS_RESET
-}
-
 void acnf_start(ACPLS *item, HardwareSerial *serial){
 	Channel *channel = srvc_getChannel(item);
 	if(channel!=NULL){
@@ -310,7 +303,7 @@ void srvc_getAppConfigSrField(ACPLS *item, int (*getfunc)(AppSerialConfig *)){
 
 void acnf_getAppSerialRate(ACPLS *item, HardwareSerial *serial){srvc_getAppConfigSrField(item, &APPCONFIGSR_GET_FIELD_FUNC(rate));}
 void acnf_getAppSerialConfig(ACPLS *item, HardwareSerial *serial){srvc_getAppConfigSrField(item, &APPCONFIGSR_GET_FIELD_FUNC(config));}
-void acnf_getAppSerialKind(ACPLS *item, HardwareSerial *serial){srvc_getAppConfigSrField(item, &APPCONFIGSR_GET_FIELD_FUNC(kind));}
+void acnf_getAppSerialMode(ACPLS *item, HardwareSerial *serial){srvc_getAppConfigSrField(item, &APPCONFIGSR_GET_FIELD_FUNC(mode));}
 
 void acnf_getAppId(ACPLS *item, HardwareSerial *serial){srvc_getAppConfigFieldBr(item, &APPCONFIG_GET_FIELD_FUNC(id));}
 void acnf_getAppState(ACPLS *item, HardwareSerial *serial){srvc_getrAppFieldSF(item, &app_getStateStr);}
@@ -406,7 +399,7 @@ void acnf_appReset(ACPLS *item, HardwareSerial *serial){
 
 void acnf_setAppSerialConfig(ACPLS *item, HardwareSerial *serial){srvc_setAppSerialConfigField(item, &appc_checkSerialConfig, &APPCONFIGSR_SET_FIELD_FUNC(config));}
 void acnf_setAppSerialRate(ACPLS *item, HardwareSerial *serial){srvc_setAppSerialConfigField(item, &appc_checkSerialRate, &APPCONFIGSR_SET_FIELD_FUNC(rate));}
-void acnf_setAppSerialKind(ACPLS *item, HardwareSerial *serial){srvc_setAppSerialConfigField(item, &serial_checkAppKind, &APPCONFIGSR_SET_FIELD_FUNC(kind));}
+void acnf_setAppSerialMode(ACPLS *item, HardwareSerial *serial){srvc_setAppSerialConfigField(item, &serial_checkMode, &APPCONFIGSR_SET_FIELD_FUNC(mode));}
 
 ACPLSCommandNode acnodes[] = {
 	{CMD_GET_ID_EXISTS,					&acnf_getExists},
@@ -440,11 +433,6 @@ ACPLSCommandNode acnodes[] = {
 	{CMD_SET_CHANNEL_ID,				&acnf_setId},
 #endif
 
-#ifdef SERIAL_SERVER_RAM_GET_COMMANDS
-	{CMD_GET_APP_VARIABLES,				&acnf_getAppVar},
-#endif
-
-
 #ifdef SERIAL_SERVER_NVRAM_SET_COMMANDS
 	{CMD_SET_APP_ID,					&acnf_setAppId},
 	{CMD_SET_APP_CHANNEL_ID_FIRST,		&acnf_setIdFirst},
@@ -460,7 +448,7 @@ ACPLSCommandNode acnodes[] = {
 #endif
 
 #ifdef SERIAL_SERVER_NVRAM_SET_COMMANDS
-	{CMD_SET_APP_SERIAL_KIND,			&acnf_setAppSerialKind},
+	{CMD_SET_APP_SERIAL_MODE,			&acnf_setAppSerialMode},
 	{CMD_SET_APP_SERIAL_RATE,			&acnf_setAppSerialRate},
 	{CMD_SET_APP_SERIAL_CONFIG,			&acnf_setAppSerialConfig},
 #endif
@@ -468,7 +456,7 @@ ACPLSCommandNode acnodes[] = {
 #ifdef SERIAL_SERVER_NVRAM_GET_COMMANDS
 	{CMD_GET_APP_SERIAL_RATE,			&acnf_getAppSerialRate},
 	{CMD_GET_APP_SERIAL_CONFIG,			&acnf_getAppSerialConfig},
-	{CMD_GET_APP_SERIAL_KIND,			&acnf_getAppSerialKind}
+	{CMD_GET_APP_SERIAL_MODE,			&acnf_getAppSerialMode}
 #endif
 
 };

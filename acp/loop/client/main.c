@@ -1,6 +1,6 @@
 #include "main.h"
 
-#define ACPLC_START(MODE) item->mode = MODE; item->control = acplc_SEND_REQUEST;
+#define ACPLC_START(MODE)  item->mode = MODE; ton_reset(&item->acpl->pack_tmr); item->control = acplc_SEND_REQUEST;
 
 void acplc_READ_RESPONSE(ACPLC *item, HardwareSerial *serial);
 void acplc_SEND_REQUEST(ACPLC *item, HardwareSerial *serial);
@@ -86,7 +86,7 @@ void acplc_SEND_REQUEST(ACPLC *item, HardwareSerial *serial){
 		case ACP_BUSY:
 			return;
 	}
-	printdln("acplc write: impossible");
+	printd("acplc_SEND_REQUEST: write returned "); printdln(acp_getStateStr(r));
 	item->control = acplc_ERROR;
 }
 
@@ -95,7 +95,7 @@ void acplc_IDLE(ACPLC *item, HardwareSerial *serial){
 }
 
 void acplc_DONE(ACPLC *item, HardwareSerial *serial){
-	item->control = acplc_IDLE;
+	acplc_reset(item);
 }
 
 void acplc_ERROR(ACPLC *item, HardwareSerial *serial){

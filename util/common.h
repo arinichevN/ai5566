@@ -82,7 +82,7 @@ enum ErrorE {
 	ERROR_SERIAL_DEVICE,
 	ERROR_SERIAL_RATE,
 	ERROR_SERIAL_CONFIG,
-	ERROR_SERIAL_KIND,
+	ERROR_SERIAL_MODE,
 	ERROR_SERIAL_BEGIN,
 	ERROR_NO_SERIAL,
 	ERROR_SEND,
@@ -145,15 +145,11 @@ typedef struct {
 #define FLOAT_SURROGATE_FORMAT "%d.%.3d"
 #define FLOAT_SURROGATE_DEF(W, F, V) int W = (int)V;	int F = (int)((V - (double)W)*1000);
 
+extern int common_checkBlockStatus(int v);
+
 extern void snprinttime(unsigned long v, char *buf, size_t len);
 
-extern long int getSerialRate (uint8_t kind);
-
-extern uint8_t getSerialRateKind (long int v);
-
-extern long int getSerialConfig(uint8_t kind);
-
-extern uint8_t getSerialConfigKind(long int v);
+extern struct timespec getCurrentTs();
 
 extern double tsToDouble(struct timespec v);
 
