@@ -9,7 +9,7 @@
  * here you can set some default parameters for
  * application
  */
-#define DEFAULT_APP_ID				10
+#define DEFAULT_APP_ID				20
 #define DEFAULT_APP_SERIAL_RATE		SR_9600
 #define DEFAULT_APP_SERIAL_CONFIG	SERIAL_8N1
 
@@ -28,5 +28,7 @@ typedef struct {
 
 APPCONFIG_DEC_GET_FIELD_FUNC(id)
 APPCONFIG_DEC_SET_FIELD_FUNC(id)
+
+extern int appConfig_begin(AppConfig *item, int btn);
 
 #endif

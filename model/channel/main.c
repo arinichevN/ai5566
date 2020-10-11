@@ -3,44 +3,18 @@
 Channel channel_buf[CHANNEL_COUNT];
 extern const ChannelParam CHANNEL_DEFAULT_PARAMS[];
 
-void channel_INIT(Channel *item);
-void channel_RUN(Channel *item);
-void channel_OFF(Channel *item);
-void channel_FAILURE(Channel *item);
+static void channel_INIT(Channel *item);
+static void channel_RUN(Channel *item);
+static void channel_OFF(Channel *item);
+static void channel_FAILURE(Channel *item);
 
-void channel_setDeviceKind(Channel *item, int kind){
-	switch(kind){
-		case DEVICE_KIND_MAX6675:
-			item->device_kind = kind;
-			item->sensor.read_func = &max6675_read;
-			printdln("max6675");
-			break;
-		case DEVICE_KIND_MAX31855:
-			item->device_kind = kind;
-			item->sensor.read_func = &max31855_read;
-			printdln("max31855");
-			break;
-		default:
-			item->device_kind = DEVICE_KIND_UNKNOWN;
-			item->sensor.read_func = NULL;
-			printdln("WARNING: unknown device");
-			break;
-	}
-}
-
-int channel_check(Channel *item){
+static int channelParam_check(const ChannelParam *item){
 	if(!common_checkBlockStatus(item->enable)){
 		return ERROR_BLOCK_STATUS;
 	}
-	switch(item->device_kind){
-		case DEVICE_KIND_MAX6675:
-		case DEVICE_KIND_MAX31855:
-			break;
-		default:
-			return ERROR_DEVICE_KIND;
-	}
-	if(item->sensor.read_func == NULL){
-		return ERROR_DEVICE_KIND;
+	int r = sensor_checkParam(item->device_kind, item->cs, item->sclk, item->miso);
+	if(r != ERROR_NO){
+		return r;
 	}
     return ERROR_NO;
 }
@@ -57,41 +31,57 @@ const char *channel_getErrorStr(Channel *item){
 	return getErrorStr(item->error_id);
 }
 
-void channel_setDefaults(Channel *item, size_t ind){
-	const ChannelParam *param = &CHANNEL_DEFAULT_PARAMS[ind];
-	item->sensor.cs = param->cs;
-	item->sensor.sclk = param->sclk;
-	item->sensor.miso = param->miso;
-	channel_setDeviceKind(item, param->device_kind);
+static int channel_setParam(Channel *item, const ChannelParam *param){
+	int r = channelParam_check(param);
+	if(r != ERROR_NO){
+		return r;
+	}
+	sensor_setParam(&item->sensor, param->device_kind, param->cs, param->sclk, param->miso);
 	ton_setInterval(&item->tmr, param->poll_interval);
 	item->id = param->id;
 	item->enable = param->enable;
+	return ERROR_NO;
 }
 
-static void channel_setFromNVRAM(Channel *item, size_t ind){
-	if(!pmem_getChannel(item, ind)){
-		printdln("   failed to get channel");
-		item->error_id = ERROR_PMEM_READ;
-		return;
+static int channel_setDefaults(Channel *item, size_t ind){
+	const ChannelParam *param = &CHANNEL_DEFAULT_PARAMS[ind];
+	int r = channel_setParam(item, param);
+	if(r == ERROR_NO){
+		pmem_savePChannel(param, ind);
 	}
+	return r;
 }
 
-void channel_setParam(Channel *item, size_t ind, int default_btn){
+static int channel_setFromNVRAM(Channel *item, size_t ind){
+	ChannelParam param;
+	if(!pmem_getPChannel(&param, ind)){
+		printdln("   failed to get channel from NVRAM");
+		return ERROR_PMEM_READ;
+	}
+	return channel_setParam(item, &param);
+}
+
+static int channel_setParamAlt(Channel *item, size_t ind, int default_btn){
 	if(default_btn == BUTTON_DOWN){
-		channel_setDefaults(item, ind);
-		pmem_saveChannel(item, ind);
+		int r = channel_setDefaults(item, ind);
+		if(r != ERROR_NO){
+			return r;
+		}
 		printd("\tdefault param\n");
 	}else{
-		channel_setFromNVRAM(item, ind);
+		int r = channel_setFromNVRAM(item, ind);
+		if(r != ERROR_NO){
+			return r;
+		}
 		printd("\tNVRAM param\n");
 	}
 	item->ind = ind;
+	return ERROR_NO;
 }
 
 void channel_begin(Channel *item, size_t ind, int default_btn){
 	printd("beginning channel ");printd(ind); printdln(":");
-	item->error_id = ERROR_NO;
-	channel_setParam(item, ind, default_btn);
+	item->error_id = channel_setParamAlt(item, ind, default_btn);
 	item->control = channel_INIT;
 	printd("\tid: ");printdln(item->id);
 	printd("\n");
@@ -119,35 +109,43 @@ void channels_begin(ChannelLList *channels, int default_btn){
 	}
 }
 
+void channel_free(Channel *item){
+	;
+}
+
 int channel_start(Channel *item){
-	printd("starting channel ");printd(item->ind);printdln(":");
-	item->enable = YES;
-	item->control = channel_INIT;
-	PmemChannel pchannel;
-	if(pmem_getPChannel(&pchannel, item->ind)){
-		pchannel.enable = item->enable;
-		pmem_savePChannel(&pchannel, item->ind);
+	if(item->control == channel_OFF || item->control == channel_FAILURE){
+		printd("starting channel ");printd(item->ind);printdln(":");
+		item->enable = YES;
+		item->control = channel_INIT;
+		CHANNEL_SAVE_FIELD(enable)
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 
 int channel_stop(Channel *item){
 	printd("stopping channel ");printdln(item->ind); 
 	item->enable = NO;
 	item->out.state = 0;
-	item->control = channel_INIT;
-	PmemChannel pchannel;
-	if(pmem_getPChannel(&pchannel, item->ind)){
-		pchannel.enable = item->enable;
-		pmem_savePChannel(&pchannel, item->ind);
-	}
+	item->error_id = ERROR_NO;
+	item->control = channel_OFF;
+	CHANNEL_SAVE_FIELD(enable)
 	return 1;
 }
 
-int channel_reload(Channel *item){
-	printd("reloading channel ");printd(item->ind); printdln(":");
-	channel_setFromNVRAM(item, item->ind);
-	item->control = channel_INIT;
+int channel_disconnect(Channel *item){
+	printd("disconnecting channel ");printdln(item->ind);
+	item->out.state = 0;
+	item->error_id = ERROR_NO;
+	item->control = channel_OFF;
+	return 1;
+}
+
+int channel_reset(Channel *item){
+	printd("resetting channel ");printd(item->ind); printdln(":");
+	channel_free(item);
+	channel_begin(item, item->ind, digitalRead(DEFAULT_CONTROL_PIN));
 	return 1;
 }
 
@@ -158,12 +156,6 @@ int channels_activeExists(ChannelLList *channels){
 		}
 	}
 	return 0;
-}
-
-void channels_stop(ChannelLList *channels){
-	FOREACH_CHANNEL(channels){
-		channel_stop(channel);
-	}
 }
 
 int channels_getIdFirst(ChannelLList *channels, int *out){
@@ -179,7 +171,7 @@ int channels_getIdFirst(ChannelLList *channels, int *out){
 }
 
 int CHANNEL_FUN_GET(device_kind)(Channel *item){
-	return item->device_kind;
+	return sensor_getDeviceKind(&item->sensor);
 }
 
 unsigned long CHANNEL_FUN_GET(poll_interval)(Channel *item){
@@ -195,11 +187,6 @@ void channel_INIT(Channel *item){
     }
 	item->out.state = 0;
 	item->out.tm = getCurrentTs();
-	item->error_id = channel_check(item);
-    if(item->error_id != ERROR_NO){
-        item->control = channel_FAILURE;
-        return;
-    }
 	item->control = channel_OFF;
 	if(item->enable == YES){
 		sensor_begin(&item->sensor);
@@ -230,48 +217,5 @@ void channel_FAILURE(Channel *item){
 	;
 }
 
-//int channel_control(Channel *item){
-	//switch(item->state){
-		//case RUN:
-			//if(tonr(&item->tmr)){
-				//int r = sensor_read(&item->sensor, &item->out.value);
-				//item->out.tm = getCurrentTs();
-				//item->error_id = r;
-				//if(r != ERROR_NO){
-					//item->out.state = 0;
-				//}else{
-					//item->out.state = 1;
-				//}
-				//printd("result: "); printd(item->id); printd(" "); printd(item->out.state); printd(" "); printdln(item->out.value); 
-			//}
-			//break;
-		//case OFF:
-			//break;
-		//case FAILURE:
-			//break;
-		//case INIT:
-			//if(item->error_id != ERROR_NO){
-		        //item->state = FAILURE;
-		        //break;
-		    //}
-			//item->out.state = 0;
-			//item->out.tm = getCurrentTs();
-			//item->error_id = channel_check(item);
-		    //if(item->error_id != ERROR_NO){
-		        //item->state = FAILURE;
-		        //break;
-		    //}
-			//item->state = OFF;
-			//if(item->enable == YES){
-				//sensor_begin(&item->sensor);
-				//ton_reset(&item->tmr);
-				//item->state = RUN;
-			//}
-			//break;
-		//default:
-			//break;
-	//}
-	//return item->state;
-//}
 
 

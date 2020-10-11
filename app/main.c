@@ -1,19 +1,20 @@
 #include "main.h"
 
-
 extern ChannelLList channels;
 extern AppSerial serials[];
 
 void app_OFF(App *item);
 void app_FAILURE(App *item);
 void app_RESET(App *item);
-void app_DISABLE(App *item);
-void app_DSTEP1(App *item);
-void app_DSTEP2(App *item);
+void app_RESET_WAIT_CHANNELS(App *item);
+void app_RESET_FREE(App *item);
 void app_RUN(App *item);
 void app_INIT(App *item);
-
 void app_begin(App *item);
+
+void app_INIT(App *item){
+	app_begin(item);
+}
 
 void app_OFF(App *item){
 	;
@@ -23,34 +24,32 @@ void app_FAILURE(App *item){
 	;
 }
 
-void app_RESET(App *item){
-	channels_stop(&channels);
-	item->next_control = app_INIT;
-	item->control = app_DSTEP1;
+void app_RESET_FREE(App *item){
+	FOREACH_CHANNEL(&channels){
+		channel_free(channel);
+	}
+	FOREACH_SERIAL(i){
+		AppSerial *serial = &serials[i];
+		appSerial_free(serial);
+	}
+	item->control = app_INIT;
 }
 
-void app_DISABLE(App *item){
-	channels_stop(&channels);
-	item->next_control = app_OFF;
-	item->control = app_DSTEP1;
-}
-
-void app_DSTEP1(App *item){
+void app_RESET_WAIT_CHANNELS(App *item){
 	FOREACH_CHANNEL(&channels){
 		CONTROL(channel);
 	}
 	appSerials_control(serials);
 	if(!channels_activeExists(&channels)){
-		item->control = app_DSTEP2;
+		item->control = app_RESET_FREE;
 	}
 }
 
-void app_DSTEP2(App *item){
-	FOREACH_SERIAL(i){
-		AppSerial *serial = &serials[i];
-		appSerial_free(serial);
+void app_RESET(App *item){
+	FOREACH_CHANNEL(&channels){
+		channel_disconnect(channel);
 	}
-	item->control = item->next_control;
+	item->control = app_RESET_WAIT_CHANNELS;
 }
 
 void app_RUN(App *item){
@@ -63,11 +62,7 @@ void app_RUN(App *item){
 		}
 	}
 	appSerials_control(serials);
-	appei_control(&item->error_indicator, item->error_id);
-}
-
-void app_INIT(App *item){
-	app_begin(item);
+	APPEI_CONTROL(&item->error_indicator, item->error_id);
 }
 
 //time for attempt to upload sketch in case of error
@@ -83,13 +78,13 @@ const char *app_getErrorStr(App *item){
 } 
 
 const char *app_getStateStr(App *item){
-	if(item->control == app_RUN)			return "RUN";
-	else if(item->control == app_FAILURE)	return "FAILURE";
-	else if(item->control == app_OFF)		return "OFF";
-	else if(item->control == app_RESET)		return "RESET";
-	else if(item->control == app_DISABLE)	return "DISABLE";
-	else if(item->control == app_DSTEP1)	return "DSTEP1";
-	else if(item->control == app_DSTEP2)	return "DSTEP2";
+	if(item->control == app_RUN)						return "RUN";
+	else if(item->control == app_FAILURE)				return "FAILURE";
+	else if(item->control == app_OFF)					return "OFF";
+	else if(item->control == app_RESET)					return "RESET";
+	else if(item->control == app_RESET_FREE)			return "RESET";
+	else if(item->control == app_RESET_WAIT_CHANNELS)	return "RESET";
+	else if(item->control == app_INIT)					return "INIT";
 	return "?";
 }
 
@@ -113,10 +108,8 @@ int appc_checkSerialConfig(int v){
 	return 0;
 }
 
-
 void app_begin(App *item){
 	item->error_id = ERROR_NO;
-	item->next_control = app_FAILURE;
 	app_uploadDelay();
 	appei_begin(&item->error_indicator, INDICATOR_PIN);
 	pinMode(DEFAULT_CONTROL_PIN, INPUT_PULLUP);
@@ -137,12 +130,8 @@ void app_begin(App *item){
 	return;
 	
 	err:
-	appei_control(&item->error_indicator, item->error_id);
+	APPEI_CONTROL(&item->error_indicator, item->error_id);
 	item->control = app_FAILURE;
-}
-
-void app_stop(App *item){
-	item->control = app_DISABLE;
 }
 
 void app_reset(App *item){
@@ -152,60 +141,6 @@ void app_reset(App *item){
 void app_init(App *item){
 	item->control = app_INIT;
 }
-
-//void app_control(App *item, AppSerial serials[], ChannelLList *channels) { 
-	//switch(item->state){
-		//case RUN:{
-			//item->error_id = ERROR_NO;
-			//FOREACH_CHANNEL(channels)
-				////printd("channel id: "); printdln(channel->id);
-				//channel_control(channel);
-				//if(channel->error_id != ERROR_NO){
-					//item->error_id = ERROR_SUBBLOCK;
-				//}
-			//}
-			//appSerials_control(serials);
-			//app_errControl(item);
-			//break;}
-		//case INIT:
-			//app_begin(item, serials, channels);
-			//break;
-		//case DSTEP1:
-			//FOREACH_CHANNEL(channels)
-				//channel_control(channel);
-			//}
-			//appSerials_control(serials);
-			//if(!channels_activeExists(channels)){
-				//item->state = DSTEP2;
-			//}
-			//break;
-		//case DSTEP2:{
-			//FOREACH_SERIAL(i)
-				//AppSerial *serial = &serials[i];
-				//free(serial->acpl);
-			//}
-			//item->state = item->next_state;
-			//break;}
-		//case RESET:
-			//channels_stop(channels);
-			//item->next_state = INIT;
-			//item->state = DSTEP1;
-			//break;
-		//case DISABLE:
-			//channels_stop(channels);
-			//item->next_state = OFF;
-			//item->state = DSTEP1;
-			//break;
-		//case FAILURE:
-			//break;
-		//case OFF:
-			//break;
-		//default:
-			//break;
-	//}
-//}
- 
-
 
 
 

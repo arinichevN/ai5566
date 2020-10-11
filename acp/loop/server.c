@@ -65,7 +65,8 @@ void acpls_READ_REQUEST(ACPLS *item, HardwareSerial *serial) {
 
 void acpls_CONSIDER_REQUEST(ACPLS *item, HardwareSerial *serial) {
 	if(acp_packCheckCRC(item->acpl->buf)){
-		if(item->acpl->buf[ACP_IND_SIGN] == ACP_SIGN_REQUEST){
+		char sign = item->acpl->buf[ACP_IND_SIGN];
+		if(sign == ACP_SIGN_REQUEST_GET || sign == ACP_SIGN_REQUEST_SET || sign == ACP_SIGN_REQUEST_SET_BROADCAST || sign == ACP_SIGN_REQUEST_GET_BROADCAST){
 			int cmd;
 			if(acp_packGetCellI(item->acpl->buf, ACP_REQUEST_IND_CMD, &cmd)){
 				int command_found = 0;

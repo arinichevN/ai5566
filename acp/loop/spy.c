@@ -4,7 +4,7 @@ int acply_initClients(ACPLY *item, size_t count){
 	ACPLYClientList *list = &item->client_list;
 	list->items = NULL;
 	list->length = 0;
-	list->items = (void **) malloc(sizeof (*list->items) * count);
+	list->items = (ACPLYClient *) malloc(sizeof (*list->items) * count);
 	if(list->items == NULL){
 		printdln("acply_initClients failed to allocate memory");
 		return 0;
@@ -12,16 +12,19 @@ int acply_initClients(ACPLY *item, size_t count){
 	list->length = count;
 	printd("acply clients array length = "); printdln(list->length);
 	for(size_t i=0; i<list->length; i++){
-		list->items[i] = NULL;
+		list->items[i].self = NULL;
 	}
 	return 1;
 }
 
-int acply_addClient(ACPLY *item, void *client){
+int acply_addClient(ACPLY *item, void *client, int (*onRequestFunction) (void *, char *, int, int), void (*onResponseFunction)(void *, char *, int, int)){
 	ACPLYClientList *list = &item->client_list;
 	for(size_t i=0; i<list->length; i++){
-		if(list->items[i] == NULL){
-			list->items[i] = client;
+		ACPLYClient *client = &list->items[i];
+		if(client->self == NULL){
+			client->self = client;
+			client->onRequestFunction = onRequestFunction;
+			client->onResponseFunction = onResponseFunction;
 			return 1;
 		}
 	}
@@ -31,8 +34,9 @@ int acply_addClient(ACPLY *item, void *client){
 int acply_delClient(ACPLY *item, void *client){
 	ACPLYClientList *list = &item->client_list;
 	for(size_t i=0; i<list->length; i++){
-		if(list->items[i] == client){
-			list->items[i] = NULL;
+		ACPLYClient *client = &list->items[i];
+		if(client->self == client){
+			client->self = NULL;
 			return 1;
 		}
 	}
@@ -51,8 +55,6 @@ void acply_init(ACPLY *item){
 	item->client_list.items = NULL;
 	item->client_list.length = 0;
 	item->last_id = -63;
-	item->onRequestFunction = NULL;
-	item->onResponseFunction = NULL;
 }
 
 void acply_READ_REQUEST(ACPLY *item, HardwareSerial *serial);
@@ -84,13 +86,11 @@ void acply_reset(ACPLY *item){
 	item->control = acply_READ_REQUEST;
 }
 
-int acply_setParam(ACPLY *item, size_t client_count, int (*onRequestFunction) (void *, char *, int, int), void (*onResponseFunction)(void *, char *, int, int)) {
+int acply_setParam(ACPLY *item, size_t client_count) {
 	if(!acply_initClients(item, client_count)){
 		printdln("acply_Init: failed");
 		return 0;
 	}
-	item->onRequestFunction = onRequestFunction;
-	item->onResponseFunction = onResponseFunction;
 	return 1;
 }
 
@@ -107,7 +107,8 @@ void acply_READ_REQUEST(ACPLY *item, HardwareSerial *serial) {
 void acply_CONSIDER_REQUEST(ACPLY *item, HardwareSerial *serial) {
 	ACPL *acpl = item->acpl;
 	if(acp_packCheckCRC(acpl->buf)){
-		if(acpl->buf[ACP_IND_SIGN] == ACP_SIGN_REQUEST){
+		char sign = acpl->buf[ACP_IND_SIGN];
+		if(sign == ACP_SIGN_REQUEST_GET || sign == ACP_SIGN_REQUEST_SET || sign == ACP_SIGN_REQUEST_SET_BROADCAST || sign == ACP_SIGN_REQUEST_GET_BROADCAST){
 			int cmd;
 			if(!acp_packGetCellI(acpl->buf, ACP_REQUEST_IND_CMD, &cmd)){
 				//printdln("request: failed to read cmd");
@@ -120,11 +121,11 @@ void acply_CONSIDER_REQUEST(ACPLY *item, HardwareSerial *serial) {
 			}
 			item->last_id = id;
 			int response_required = 0;
-			if(item->onRequestFunction != NULL){
-				for(size_t i=0; i<item->client_list.length; i++){
-					if(item->client_list.items[i] != NULL){
-						response_required = response_required || item->onRequestFunction(item->client_list.items[i], acpl->buf, id, cmd);
-					}
+			ACPLYClientList *list = &item->client_list;
+			for(size_t i=0; i<list->length; i++){
+				ACPLYClient *client = &list->items[i];
+				if(client->self != NULL){
+					response_required = response_required || client->onRequestFunction(client->self, acpl->buf, id, cmd);
 				}
 			}
 			if(!response_required){
@@ -174,11 +175,11 @@ void acply_CONSIDER_RESPONSE(ACPLY *item, HardwareSerial *serial) {
 	}else{
 		printdln("acply: bad response crc");
 	}
-	if(item->onResponseFunction != NULL){
-		for(size_t i=0; i <item->client_list.length; i++){
-			if(item->client_list.items[i] != NULL){
-				item->onResponseFunction(item->client_list.items[i], acpl->buf, id, success);
-			}
+	ACPLYClientList *list = &item->client_list;
+	for(size_t i=0; i <list->length; i++){
+		ACPLYClient *client = &list->items[i];
+		if(client->self != NULL){
+			client->onResponseFunction(client->self, acpl->buf, id, success);
 		}
 	}
 	acply_reset(item);

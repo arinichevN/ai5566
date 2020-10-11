@@ -87,7 +87,7 @@ int acpd_sendSIUl(HardwareSerial *serial, char sign, const char *v1, int v2, uns
 }
 
 int acpd_getFTS(HardwareSerial *serial, const char *cmd, int channel_id, FTS *out){
-	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST, cmd, channel_id);
+	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 	if(!r) return r;
 	ACPD_PREP_BUF
 	if(acpd_readResponse(serial, ACPD_BUF, ACP_BUF_MAX_LENGTH) != ACP_DONE){
@@ -103,7 +103,7 @@ int acpd_getFTS(HardwareSerial *serial, const char *cmd, int channel_id, FTS *ou
 }
 
 int acpd_getII(HardwareSerial *serial, const char *cmd, int channel_id, int *out){
-	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST, cmd, channel_id);
+	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 	if(!r) return r;
 	ACPD_PREP_BUF
 	if(acpd_readResponse(serial, ACPD_BUF, ACP_BUF_MAX_LENGTH) != ACP_DONE){
@@ -129,7 +129,7 @@ int acpd_getII(HardwareSerial *serial, const char *cmd, int channel_id, int *out
 }
 
 int acpd_getIUl(HardwareSerial *serial, const char *cmd, int channel_id, unsigned long *out){
-	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST, cmd, channel_id);
+	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 	if(!r) return r;
 	ACPD_PREP_BUF
 	if(acpd_readResponse(serial, ACPD_BUF, ACP_BUF_MAX_LENGTH) != ACP_DONE){
@@ -155,7 +155,7 @@ int acpd_getIUl(HardwareSerial *serial, const char *cmd, int channel_id, unsigne
 }
 
 int acpd_getIS(HardwareSerial *serial, const char *cmd, int channel_id, char *out, size_t slen){
-	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST, cmd, channel_id);
+	int r = acpd_sendSI(serial, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 	if(!r) return r;
 	ACPD_PREP_BUF
 	r = acpd_readResponse(serial, ACPD_BUF, ACP_BUF_MAX_LENGTH);

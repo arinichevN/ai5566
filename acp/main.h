@@ -31,8 +31,11 @@
 #define ACP_DELIMITER_COLUMN_STR	";"
 #define ACP_DELIMITER_END_STR		">"
 
-#define ACP_SIGN_REQUEST			'?'
-#define ACP_SIGN_RESPONSE			'!'
+#define ACP_SIGN_REQUEST_GET				'?' //response required
+#define ACP_SIGN_REQUEST_SET				'&' //no response required 
+#define ACP_SIGN_REQUEST_GET_BROADCAST		'*' //for everyone in the net, response required
+#define ACP_SIGN_REQUEST_SET_BROADCAST		'#' //for everyone in the net, no response required
+#define ACP_SIGN_RESPONSE					'!' //response to request
 
 #define ADSS ACP_DELIMITER_START_STR
 #define ADCS ACP_DELIMITER_COLUMN_STR 

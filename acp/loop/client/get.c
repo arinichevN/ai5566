@@ -28,7 +28,7 @@ int acplc_getBrII(ACPLC *item, int cmd, int *v1, int *v2){
 			return ACP_DONE;
 		case ACP_IDLE:{
 			//printd("try start: ");
-			int r = acp_buildPackI(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST, cmd);
+			int r = acp_buildPackI(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST_GET, cmd);
 			if(!r) {printd("error) "); acplc_reset(item); return ACP_ERROR;}
 			ACPLC_START(ACPLC_MODE_SEND_READ)
 			//printd("busy) ");
@@ -65,7 +65,7 @@ int acplc_getIS(ACPLC *item, int cmd, int channel_id, char *out, size_t slen){
 			}
 			acplc_reset(item); return ACP_DONE;
 		case ACP_IDLE:{
-			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST, cmd, channel_id);
+			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 			if(!r) {acplc_reset(item); return ACP_ERROR;}
 			ACPLC_START(ACPLC_MODE_SEND_READ)
 			return ACP_BUSY;}
@@ -96,7 +96,7 @@ int acplc_getFTS(ACPLC *item, int cmd, int channel_id, FTS *out){
 			return ACP_DONE;
 		case ACP_IDLE:{
 			//printd("(acplc_getFTS: start)");
-			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST, cmd, channel_id);
+			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 			if(!r) {acplc_reset(item); return ACP_ERROR;}
 			ACPLC_START(ACPLC_MODE_SEND_READ)
 			return ACP_BUSY;}
@@ -134,7 +134,7 @@ int acplc_getII(ACPLC *item, int cmd, int channel_id, int *out){
 			acplc_reset(item);return ACP_DONE;
 		case ACP_IDLE:{
 			//printd("try start: ");
-			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST, cmd, channel_id);
+			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 			if(!r) {acplc_reset(item); return ACP_ERROR;}
 			ACPLC_START(ACPLC_MODE_SEND_READ)
 			//printd("busy) ");
@@ -170,7 +170,7 @@ int acplc_getIF(ACPLC *item, int cmd, int channel_id, double *out){
 			}
 			acplc_reset(item);return ACP_DONE;
 		case ACP_IDLE:{
-			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST, cmd, channel_id);
+			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 			if(!r) {acplc_reset(item); return ACP_ERROR;}
 			ACPLC_START(ACPLC_MODE_SEND_READ)
 			return ACP_BUSY;}
@@ -212,7 +212,7 @@ int acplc_getIII(ACPLC *item, int cmd, int channel_id, int id2, int *out){
 			}
 			acplc_reset(item);return ACP_DONE;
 		case ACP_IDLE:{
-			int r = acp_buildPackIII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST, cmd, channel_id, id2);
+			int r = acp_buildPackIII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST_GET, cmd, channel_id, id2);
 			if(!r) return ACP_ERROR;
 			ACPLC_START(ACPLC_MODE_SEND_READ)
 			return ACP_BUSY;}
@@ -260,7 +260,7 @@ int acplc_getIIII(ACPLC *item, int cmd, int channel_id, int id2, int *v1, int *v
 			*v1 = _v1;
 			acplc_reset(item);return ACP_DONE;
 		case ACP_IDLE:{
-			int r = acp_buildPackIII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST, cmd, channel_id, id2);
+			int r = acp_buildPackIII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST_GET, cmd, channel_id, id2);
 			if(!r) {acplc_reset(item); return ACP_ERROR;}
 			ACPLC_START(ACPLC_MODE_SEND_READ)
 			return ACP_BUSY;}
@@ -296,7 +296,7 @@ int acplc_getIUl(ACPLC *item, int cmd, int channel_id, unsigned long *out){
 			}
 			return ACP_DONE;
 		case ACP_IDLE:{
-			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST, cmd, channel_id);
+			int r = acp_buildPackII(item->acpl->buf, ACP_BUF_MAX_LENGTH, ACP_SIGN_REQUEST_GET, cmd, channel_id);
 			if(!r) {acplc_reset(item); return ACP_ERROR;}
 			ACPLC_START(ACPLC_MODE_SEND_READ)
 			return ACP_BUSY;}

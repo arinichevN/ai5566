@@ -16,7 +16,6 @@ typedef struct app_st{
 	int error_id;
 	AppErrorIndicator error_indicator;
 	void (*control)(struct app_st *);
-	void (*next_control)(struct app_st *);
 } App;
 
 extern int appc_checkId(int v);

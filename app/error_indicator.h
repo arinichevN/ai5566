@@ -8,6 +8,6 @@ typedef struct apperrorindicator_st{
 
 extern void appei_begin(AppErrorIndicator *item, int pin);
 
-#define appei_control(item, error_id) (item)->control(item, error_id);
+#define APPEI_CONTROL(item, error_id) (item)->control(item, error_id);
 
 #endif
