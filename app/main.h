@@ -1,33 +1,37 @@
 #ifndef APP_MAIN_H
 #define APP_MAIN_H
 
-#include "../acp/loop/main.h"
-#include "../acp/loop/server.h"
-#include "../util/common.h"
-#include "../util/serial.h"
-#include "../model/channel/main.h"
-#include "serial.h"
-#include "serial_config.h"
-#include "config.h"
-#include "error_indicator.h"
+#include "../lib/common.h"
+#include "../lib/serial.h"
+#include "../lib/acp/loop/main.h"
+#include "../lib/acp/loop/server/main.h"
+#include "../model/Channel/main.h"
+#include "channels/main.h"
+#include "channels/locker.h"
+#include "serials/main.h"
+#include "AppSerial/param.h"
+#include "AppErrorIndicator/main.h"
+#ifdef USE_AOIDS
+#include "aoids/main.h"
+#endif
+#ifdef USE_NOIDS
+#include "noids/main.h"
+#endif
+#include "param.h"
 
-typedef struct app_st{
-	int id;
-	int error_id;
-	AppErrorIndicator error_indicator;
-	void (*control)(struct app_st *);
-} App;
+extern int app_id;
+extern dk_t app_device_kind;
+extern err_t app_error_id;
+extern void (*app_control)();
 
 extern int appc_checkId(int v);
-extern int appc_checkSerialRate(int v);
-extern int appc_checkSerialConfig(int v);
 
-extern void app_init(App *item);
-extern void app_reset(App *item);
+extern void app_begin();
+extern void app_reset();
 
-extern const char *app_getErrorStr(App *item);
-extern const char *app_getStateStr(App *item);
+extern const char *app_getErrorStr();
+extern const char *app_getStateStr();
 
-extern App app;
+
 
 #endif 

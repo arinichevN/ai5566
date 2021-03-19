@@ -1,18 +1,12 @@
 #include "app.h"
 #include "app_include.h"
 
-App app;
-ChannelLList channels = LLIST_INITIALIZER;
-AppSerial serials[SERIAL_COUNT];
-
 void setup(){
-	app_init(&app);
+	app_begin();
 }
-
-//#include "util/stopwatch.c"
 
 void loop() {
 	//stw_start();
-	CONTROL_N(app);
+	app_control();
 	//stw_stop();
 }

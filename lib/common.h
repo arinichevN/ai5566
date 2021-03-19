@@ -1,0 +1,151 @@
+#ifndef COMMON_H
+#define COMMON_H
+
+#define STATE_STR_MAX_LENGTH 16
+
+typedef enum {
+	ERROR_NO = 0,
+	ERROR_FIRST = 1,
+	ERROR_SOME,
+	
+	WARNING_READ,
+	WARNING_BAD_DATA,
+	ERROR_PARAM,
+	ERROR_SUBBLOCK,
+	ERROR_BLOCK_STATUS,
+	ERROR_DEVICE_KIND,
+	ERROR_GOAL,
+	ERROR_SAVE_GOAL,
+	ERROR_METHOD,
+	ERROR_OUT,
+	ERROR_PID_MODE,
+	ERROR_PID_KP,
+	ERROR_PID_KI,
+	ERROR_PID_KD,
+	ERROR_POS2_MODE,
+	ERROR_POS2_HYS,
+	ERROR_PWM,
+	ERROR_NVRAM_READ,
+	ERROR_READ,
+	ERROR_CHANNELS,
+	ERROR_SERVER_NODES,
+	ERROR_SERIAL,
+	ERROR_SERIAL_DEVICE,
+	ERROR_SERIAL_RATE,
+	ERROR_SERIAL_DPS,
+	ERROR_SERIAL_MODE,
+	ERROR_SERIAL_BEGIN,
+	ERROR_NO_SERIAL,
+	ERROR_SEND,
+	ERROR_BAD_RESULT,
+	ERROR_PATIENCE_LOST,
+	ERROR_SLAVE_START,
+	ERROR_SLAVE_STOP,
+	ERROR_RETRY,
+	ERROR_TERMOCOUPLE_OPEN,
+	ERROR_TERMOCOUPLE_SC_VCC,
+	ERROR_TERMOCOUPLE_SC_GND,
+	ERROR_RTC,
+	ERROR_NVRAM,
+	ERROR_NOID,
+	ERROR_AOID,
+	ERROR_1WIRE,
+	ERROR_COUNT
+} err_t;
+
+#define BUTTON_DOWN		0
+#define BUTTON_UP		1
+
+typedef enum {
+	NO=0,
+	YES=1
+} yn_t;
+
+typedef enum {
+	FAILURE=0,
+	SUCCESS=1
+} sf_t;
+
+typedef enum {
+	OFF=0,
+	ON=1
+} onf_t;
+
+typedef enum {
+	STATE_UNKNOWN=0,
+	STATE_BUSY,
+	STATE_IDLE,
+	STATE_RUN,
+	STATE_OFF,
+	STATE_DONE,
+	STATE_FAILURE,
+	STATE_WAIT,
+	STATE_INIT
+} state_t;
+
+typedef enum {
+	DEVICE_KIND_UNKNOWN=0,
+	DEVICE_KIND_AI18,
+	DEVICE_KIND_AI22,
+	DEVICE_KIND_AI5566,
+	DEVICE_KIND_AOUT,
+	DEVICE_KIND_AIND,
+	DEVICE_KIND_DSERIAL,
+	DEVICE_KIND_MAX6675,
+	DEVICE_KIND_MAX31855,
+	DEVICE_KIND_DS18B20,
+	DEVICE_KIND_SPWM,
+	DEVICE_KIND_HPWM,
+	DEVICE_KIND_DHT22,
+	DEVICE_KIND_DHT22T,	//temperature
+	DEVICE_KIND_DHT22H,	//humidity
+	DEVICE_KIND_DS3231,
+	DEVICE_KIND_TIMER,
+	DEVICE_KIND_INDICATOR,
+	DEVICE_KIND_MAX7219,
+	DEVICE_KIND_TM1637,
+	DEVICE_KIND_DSLED,
+	DEVICE_KIND_ATD32
+} dk_t;
+
+struct timespec{
+	unsigned long tv_sec;
+	unsigned long tv_nsec;
+};
+
+typedef struct {
+	double value;
+	struct timespec tm;
+	yn_t success;
+} Fts;
+
+typedef enum {
+	TEXT_ALIGNMENT_UNKNOWN,
+	TEXT_ALIGNMENT_LEFT,
+	TEXT_ALIGNMENT_RIGHT,
+	TEXT_ALIGNMENT_CENTER,
+	TEXT_ALIGNMENT_JUSTIFIED
+} talign_t;
+
+#define ARRLEN(A) (sizeof(A) / sizeof((A)[0]))
+
+#define PERCENT_MAX 100
+
+#define MIN_IND 0UL
+
+#define FLOAT_SURROGATE_FORMAT "%d.%.3d"
+#define FLOAT_SURROGATE_DEF(W, F, V) int W = (int)V;	int F = (int)((V - (double)W)*1000);
+
+extern int checkBlockStatus(yn_t v);
+
+extern void snprinttime(unsigned long v, char *buf, size_t len);
+
+extern struct timespec getCurrentTs();
+
+extern double tsToDouble(struct timespec v);
+
+extern const char *getErrorStr(err_t v);
+
+extern const char *getStateStr(state_t v);
+
+#endif 

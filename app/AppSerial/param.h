@@ -1,0 +1,28 @@
+#ifndef APP_SERIAL_PARAM_H
+#define APP_SERIAL_PARAM_H
+
+typedef struct {
+	int rate;
+	int dps;
+	int mode;
+} AppSerialParam;
+
+#define APP_SERIAL_PARAM_GET_FIELD_FUNC_I(FIELD) appcgfsf ## FIELD
+#define APP_SERIAL_PARAM_DEF_GET_FIELD_FUNC_I(FIELD) int APP_SERIAL_PARAM_GET_FIELD_FUNC_I(FIELD)(AppSerialParam *item){return item->FIELD;}
+#define APP_SERIAL_PARAM_DEC_GET_FIELD_FUNC_I(FIELD) extern int APP_SERIAL_PARAM_GET_FIELD_FUNC_I(FIELD)(AppSerialParam *item);
+
+#define APP_SERIAL_PARAM_SET_FIELD_FUNC_I(FIELD) appcsfsf ## FIELD
+#define APP_SERIAL_PARAM_DEF_SET_FIELD_FUNC_I(FIELD) void APP_SERIAL_PARAM_SET_FIELD_FUNC_I(FIELD)(AppSerialParam *item, int v){item->FIELD = v;}
+#define APP_SERIAL_PARAM_DEC_SET_FIELD_FUNC_I(FIELD) extern void APP_SERIAL_PARAM_SET_FIELD_FUNC_I(FIELD)(AppSerialParam *item, int v);
+
+APP_SERIAL_PARAM_DEC_GET_FIELD_FUNC_I(rate)
+APP_SERIAL_PARAM_DEC_GET_FIELD_FUNC_I(dps)
+APP_SERIAL_PARAM_DEC_GET_FIELD_FUNC_I(mode)
+
+APP_SERIAL_PARAM_DEC_SET_FIELD_FUNC_I(rate)
+APP_SERIAL_PARAM_DEC_SET_FIELD_FUNC_I(dps)
+APP_SERIAL_PARAM_DEC_SET_FIELD_FUNC_I(mode)
+
+extern  int appSerialParam_check (AppSerialParam *self);
+	
+#endif
