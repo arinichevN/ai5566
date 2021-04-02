@@ -23,7 +23,7 @@ Aoid *srvc_getAoid(Acpls *server){
 				return oid;
 			}
 		}
-		printdln("\tOID not found");
+		printdln("\tAOID not found");
 		return NULL;
 
 	}
@@ -100,7 +100,7 @@ Noid *srvc_getNoid(Acpls *server){
 				return oid;
 			}
 		}
-		printdln("\tOID not found");
+		printdln("\tNOID not found");
 		return NULL;
 
 	}
@@ -131,7 +131,8 @@ void acnf_noidExists(Acpls *server, int command){
 			}
 		}
 		printdln("\tOID not found");
-		return NULL;
+		acpls_reset(server);
+		return;
 
 	}
 	printdln("\tfailed to get oid_id");
@@ -218,14 +219,16 @@ AcplsCommandNode acnodes[] = {
 	{CMD_NOID_STOP,								acnf_noidServeRequest},
 	{CMD_NOID_RESET,							acnf_noidServeRequest},
 	{CMD_NOID_GET_EXISTS,						acnf_noidExists},
-	{CMD_NOID_GET_ACP_COMMAND_SUPPORTED,		acnf_noidServeRequest},
+	{CMD_NOID_GET_ACP_COMMAND_SUPPORTED_NEXT,	acnf_noidServeRequest},
+	{CMD_NOID_GET_ACP_COMMAND_SUPPORTED_FIRST,	acnf_noidServeRequest},
 	{CMD_NOID_GET_NEXT,							acnf_noidGetNext},
 	{CMD_NOID_GET_FIRST,						acnf_noidGetFirst},
 	{CMD_APP_GET_ID,							acnf_getAppId},
 #endif
 
 #ifdef USE_AOIDS
-	{CMD_AOID_GET_ACP_COMMAND_SUPPORTED,		acnf_aoidServeRequest},
+	{CMD_AOID_GET_ACP_COMMAND_SUPPORTED_NEXT,	acnf_aoidServeRequest},
+	{CMD_AOID_GET_ACP_COMMAND_SUPPORTED_FIRST,	acnf_aoidServeRequest},
 	{CMD_AOID_GET_NEXT,							acnf_aoidGetNext},
 	{CMD_AOID_GET_FIRST,						acnf_aoidGetFirst},
 	{CMD_AOID_START,							acnf_aoidServeRequest},
@@ -243,22 +246,4 @@ AcplsCommandNode acnodes[] = {
 #define ACPL_CNODE_COUNT (sizeof acnodes / sizeof acnodes[0])
 
 AcplsCommandNodeList server_nodes = {.items = acnodes, .length = ACPL_CNODE_COUNT, .max_length = ACPL_CNODE_COUNT};
-//<?CMD_GET_OBJECT_FIRST, app_id, prev_oid>
-//<?CMD_GET_OBJECT_NEXT, app_id, prev_oid>
-//<app_id; oid; parent_oid; kind; description>
-
-//<?CMD_GET_OBJECT_ACP_COMMAND_SUPPORTED, app_id, oid, cmd>
-//<app_id; oid; cmd; supported>
-
-//<?CMD_SET_OBJECT_PARAM; app_id; oid; param>
-
-//<?CMD_GET_OBJECT_RAM_PARAM; app_id; oid>
-//<app_id; oid; param>
-
-//<?CMD_GET_OBJECT_NVRAM_PARAM; app_id; oid>
-//<app_id; oid; param; success>
-
-//<?CMD_DELETE_OBJECT; app_id; del_oid>
-
-//<?CMD_ADD_OBJEC; app_id; parent_oid>
 

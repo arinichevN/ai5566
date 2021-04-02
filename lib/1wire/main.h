@@ -21,7 +21,7 @@ struct owire_st{
 	int (*reset) (Owire *);
 	int (*write) (Owire *, const uint8_t *, size_t);
 	int (*read) (Owire *, uint8_t *, size_t);
-	int (*broadcastCommand)(Owire *owire, uint8_t command);
+	int (*broadcastCommand)(Owire *, uint8_t);
 	Rmutex rmutex;
 };
 

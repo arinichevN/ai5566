@@ -11,9 +11,7 @@ extern int app_id;
 static void noids_serveRequestSelf(void *vself, Noid *oid, void *vserver, int command){
 	Acpls *server = (Acpls *) vserver;
 	switch(command){
-		case CMD_NOID_GET_ACP_COMMAND_SUPPORTED:
-			noidServer_sendSupportedE(oid, server);
-			return;
+		CASE_NOID_GET_ACP_COMMAND_SUPPORTED(E)
 	}
 	acpls_reset(server);
 }

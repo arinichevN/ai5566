@@ -3,6 +3,8 @@
 
 #include <limits.h>
 
+#define VARGS(...) __VA_ARGS__
+
 #define CONTROL(OPT) (OPT)->control(OPT)
 #define CONTROL_N(O) O.control(&O)
 

@@ -161,9 +161,7 @@ void appSerial_serveAoidRequestSelf(void *vself, Aoid *oid, void *vserver, int c
 			appSerial_reset(self);
 			acpls_reset(server);
 			return;
-		case CMD_AOID_GET_ACP_COMMAND_SUPPORTED:
-			aoidServer_sendSupportedR(oid, server);
-			return;
+		CASE_AOID_GET_ACP_COMMAND_SUPPORTED(R)
 	}
 	acpls_reset(server);
 }
@@ -175,9 +173,7 @@ void appSerial_serveAoidRequestId(void *vself, Aoid *oid, void *vserver, int com
 		case CMD_AOID_GET_RAM_VALUE:
 			aoidServer_sendII(oid, server, self->id, 1);
 			return;
-		case CMD_AOID_GET_ACP_COMMAND_SUPPORTED:
-			aoidServer_sendSupportedGr(oid, server);
-			return;
+		CASE_AOID_GET_ACP_COMMAND_SUPPORTED(Gr)
 	}
 	acpls_reset(server);
 }
@@ -214,9 +210,7 @@ void appSerial_serveAoidRequestId(void *vself, Aoid *oid, void *vserver, int com
 			}\
 			acpls_reset(server);\
 			return;\
-		case CMD_AOID_GET_ACP_COMMAND_SUPPORTED:\
-			aoidServer_sendSupportedGGS(oid, server);\
-			return;\
+		CASE_AOID_GET_ACP_COMMAND_SUPPORTED(GGS)\
 	}\
 	acpls_reset(server);\
 }

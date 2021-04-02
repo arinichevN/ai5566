@@ -17,6 +17,14 @@
 
 /*
  * -user_config:
+ * application will wait APP_UPLOAD_DELAY_MS before running main program.
+ * This prevents from new sketch upload failure in case of some errors in
+ * old sketch. You can always upload new sketch during APP_UPLOAD_DELAY_MS. 
+ */
+#define APP_UPLOAD_DELAY_MS 5000
+
+/*
+ * -user_config:
  * uncomment the following line if you want to enable serial server,
  * this allows you to communicate with device over serial interface
  */

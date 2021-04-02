@@ -1,11 +1,5 @@
 
-static int channel_noidSupportedCommands(int command){
-	switch(command){
-		case CMD_NOID_GET_FTS: case CMD_NOID_GET_STATE: case CMD_NOID_GET_ERROR:case CMD_NOID_START:case CMD_NOID_STOP:case CMD_NOID_RESET:case CMD_NOID_GET_EXISTS:case CMD_NOID_GET_DEVICE_KIND:
-			return 1;
-	}
-	return 0;
-}
+DEF_FUN_NOID_SERVER_SEND_SUPPORTED_COMMAND(Chn, VARGS({CMD_NOID_GET_FTS, CMD_NOID_GET_STATE, CMD_NOID_GET_ERROR, CMD_NOID_START, CMD_NOID_STOP, CMD_NOID_RESET, CMD_NOID_GET_EXISTS, CMD_NOID_GET_DEVICE_KIND}))
 
 static void channel_serveNoidRequestSelf(void *vself, Noid *oid, void *vserver, int command){
 	Channel *self = (Channel *) vself;
@@ -35,9 +29,7 @@ static void channel_serveNoidRequestSelf(void *vself, Noid *oid, void *vserver, 
 		case CMD_NOID_GET_DEVICE_KIND:
 			noidServer_sendI(oid, server, self->device_kind);
 			return;
-		case CMD_NOID_GET_ACP_COMMAND_SUPPORTED:
-			noidServer_sendSupportedCommand(oid, server, channel_noidSupportedCommands);
-			return;
+		CASE_NOID_GET_ACP_COMMAND_SUPPORTED(Chn)
 	}
 	acpls_reset(server);
 }

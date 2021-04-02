@@ -68,7 +68,7 @@ void app_RUN(){
 void app_uploadDelay(){
 	pinMode(INDICATOR_PIN, OUTPUT);
 	digitalWrite(INDICATOR_PIN, HIGH);
-	delay(5000);
+	delay(APP_UPLOAD_DELAY_MS);
 	digitalWrite(INDICATOR_PIN, LOW);
 }
 
