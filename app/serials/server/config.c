@@ -126,11 +126,11 @@ void acnf_noidExists(Acpls *server, int command){
 			goto found;
 		}
 		FOREACH_APP_NOID{
-			if(id == *oid->id){
+			if(id == *oid->id && oid->kind != NOID_KIND_EXTERN){
 				goto found;
 			}
 		}
-		printdln("\tOID not found");
+		printd(id); printdln(" NOID not found");
 		acpls_reset(server);
 		return;
 
