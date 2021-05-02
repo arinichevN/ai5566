@@ -5,16 +5,16 @@
  * put default parameters for each channel in this array
  * ChannelParam structure members:
  * id,
- * device_kind,
- * poll_interval,
+ * device_kind (DEVICE_KIND_MAX6675, DEVICE_KIND_MAX31855),
+ * poll_interval_ms,
  * cs (should be unique),
  * sclk,
  * miso;
  */
 const ChannelParam CHANNEL_DEFAULT_PARAMS[] = {
-	{21, DEVICE_KIND_MAX31855, 550UL, 9,11,5},
-	{22, DEVICE_KIND_MAX31855, 570UL, 6,11,5},
-	{23, DEVICE_KIND_MAX31855, 590UL, 3,11,5}
+	{21, DEVICE_KIND_MAX31855, 550UL, 5,3,4},
+	{22, DEVICE_KIND_MAX31855, 570UL, 6,3,4},
+	{23, DEVICE_KIND_MAX31855, 590UL, 7,3,4}
 };
 
 #define CHANNEL_COUNT (sizeof CHANNEL_DEFAULT_PARAMS / sizeof CHANNEL_DEFAULT_PARAMS[0])

@@ -48,15 +48,15 @@
  * -user_config:
  * uncomment serial interfaces you want to use:
  */
-#define WANT_SERIAL0
+//#define WANT_SERIAL0
 #define WANT_SERIAL1
-#define WANT_SERIAL2
-#define WANT_SERIAL3
+//#define WANT_SERIAL2
+//#define WANT_SERIAL3
 
 /*
  * -user_config:
  * uncomment the following line if you need debug messages:
  */
-#define MODE_DEBUG
+//#define MODE_DEBUG
 
 #endif 

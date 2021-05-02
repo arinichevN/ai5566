@@ -99,8 +99,11 @@ void channel_free(Channel *self){
 int channel_start(Channel *self){
 	if(self->control == channel_OFF){
 		printd("starting channel ");printd(self->ind);printdln(":");
-		digitalWrite(self->cs, HIGH);
-		digitalWrite(self->sclk, LOW);
+		if(chplr_lock(self)){
+			digitalWrite(self->cs, HIGH);
+			digitalWrite(self->sclk, LOW);
+			chplr_unlock(self);
+		}
 		ton_reset(&self->tmr);
 		self->sensor->start(self->sensor->self);
 		self->control = channel_WAIT;
@@ -114,8 +117,11 @@ int channel_stop(Channel *self){
 		return 0;
 	}
 	printd("stopping channel ");printdln(self->ind);
-	digitalWrite(self->cs, LOW);
-	digitalWrite(self->sclk, LOW);
+	if(chplr_lock(self)){
+		digitalWrite(self->cs, HIGH);
+		digitalWrite(self->sclk, LOW);
+		chplr_unlock(self);
+	}
 	self->output.success = NO;
 	self->error_id = ERROR_NO;
 	self->control = channel_OFF;
@@ -125,8 +131,11 @@ int channel_stop(Channel *self){
 int channel_disconnect(Channel *self){
 	printd("disconnecting channel ");printdln(self->ind);
 	if(self->control != channel_FAILURE){
-		digitalWrite(self->cs, LOW);
-		digitalWrite(self->sclk, LOW);
+		if(chplr_lock(self)){
+			digitalWrite(self->cs, HIGH);
+			digitalWrite(self->sclk, LOW);
+			chplr_unlock(self);
+		}
 	}
 	self->output.success = NO;
 	self->error_id = ERROR_NO;
@@ -137,8 +146,11 @@ int channel_disconnect(Channel *self){
 int channel_reset(Channel *self){
 	printd("restarting channel ");printd(self->ind); printdln(":");
 	if(self->control != channel_FAILURE){
-		digitalWrite(self->cs, LOW);
-		digitalWrite(self->sclk, LOW);
+		if(chplr_lock(self)){
+			digitalWrite(self->cs, HIGH);
+			digitalWrite(self->sclk, LOW);
+			chplr_unlock(self);
+		}
 	}
 	channel_free(self);
 	channel_begin(self, self->ind);
